@@ -30,7 +30,7 @@ def valid_mime_extensions(request):
     """
     Returns the valid mime-types as well as the file extension for each.
     """
-    if 'lokp.file_mime_extensions' not in request.registry.settings:
+    if 'lokp.file_mime_extensions' not in request.registry.settings: # file extensions can be added to registry by changing development.ini
         return {}
 
     vfme = {}

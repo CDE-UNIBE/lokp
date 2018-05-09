@@ -26,7 +26,6 @@ lokpAssetResolver = AssetResolver('lokp')
 log = logging.getLogger(__name__)
 _ = TranslationStringFactory('lokp')
 
-
 @view_config(
     route_name='file_upload_form_embedded', permission='edit',
     renderer='lokp:templates/form/fileupload_embedded.mak')
@@ -76,7 +75,7 @@ def file_upload_form_embedded(request):
     reqts = form.get_widget_resources()
 
     return {
-        'form': _get_rendered_form(request, form, success=succeed),
+        'form': _get_rendered_form(request, form, success=succeed), ## saves uploaded form in upload folder
         'js_links': reqts['js'],
         'css_links': reqts['css']
     }
@@ -134,7 +133,6 @@ def file_upload_json_response(request):
             'success': False
         }
 
-
 def _get_rendered_form(
         request, form, appstruct=colander.null, submitted='submit',
         success=None, readonly=False):
@@ -188,7 +186,7 @@ def file_upload_renderer(tmpl_name, **kw):
 
     return template.render(**kw)
 
-
+# TODO: pass boolean parameter for file upload
 def handle_upload(request, filedict):
     """
     Handle the upload of a new file.

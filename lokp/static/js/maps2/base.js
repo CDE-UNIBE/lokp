@@ -185,7 +185,8 @@ function initContextLayerControl() {
  * Initialize field to search for places with Google.
  */
 function initMapSearch(mapId) {
-    var searchField = $('#js-map-search-' + mapId);
+    var searchField = $('#js-map-search-' + mapId);  //
+
     if (searchField.length === 0) return;
 
     var mapSearch = new google.maps.places.SearchBox(searchField[0]);
@@ -267,6 +268,9 @@ function showContextLegendModal(mapId, name, layer) {
  * @param map
  */
 function initMapContent(map) {
+
+    // zoom to myanmar
+    map.setView([21.9162, 95.9560], 6);
 
     var mapOptions = getMapOptionsFromMap(map);
     var mapCriteria = mapOptions.mapVariables.map_criteria;
@@ -576,3 +580,10 @@ function getColors(index) {
     // Do not break if index > length
     return colors[index % colors.length];
 }
+
+function zoomToDealLocation(map, coordLatLong) {
+    var lat = coordLatLong[0];
+    var long = coordLatLong[1];
+    map.setView([lat, long], 8);
+}
+

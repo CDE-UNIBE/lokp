@@ -295,7 +295,7 @@ def formdataToDiff(request, newform, itemType):
         except AttributeError:
             continue
 
-        # Loop the thematic groups of the category
+        # Loop the thematic groups of the category   // TODO: iterate over taggroup 12
         for (thmgrp, tgroups) in thmgrpsitems:
 
             if (thmgrp in categorylist.getInvolvementThematicgroupIds()
@@ -944,7 +944,8 @@ def getFormdataFromItemjson(
                     tagsdata[t['key']] = v
 
         if 'geometry' in taggroup:
-            tagsdata['geometry'] = taggroup['geometry']
+            #tagsdata['geometry'] = taggroup['geometry']
+            tagsdata[tg.map.name] = {'geometry': taggroup['geometry']} # geometry values of polygons are added to edit session
 
         if tg.getRepeatable():
             tagsdata = [tagsdata]

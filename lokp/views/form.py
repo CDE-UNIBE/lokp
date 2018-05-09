@@ -100,7 +100,7 @@ def renderForm(request, itemType, **kwargs):
         newCategory = configCategoryList.getFirstCategoryId()
 
     # Collect a list with id and names of all available categories which will
-    # be used to create the buttons
+    # be used to create the buttons based cat
     categoryListButtons = []
     for cat in sorted(
             configCategoryList.getCategories(), key=lambda cat: cat.order):
@@ -152,7 +152,7 @@ def renderForm(request, itemType, **kwargs):
             buttons = getFormButtons(
                 request, categoryListButtons, oldCategory,
                 showSessionCategories=showSessionCategories)
-
+        # creates form?
         form = deform.Form(oldschema, buttons=buttons, formid=formid)
 
         if p == 'delete':
@@ -160,22 +160,21 @@ def renderForm(request, itemType, **kwargs):
         else:
             try:
                 # Try to validate the form
-                captured = form.validate(request.POST.items())
+                captured = form.validate(request.POST.items())  # captured contains input values
 
             except deform.ValidationFailure as e:
                 # The submitted values contains errors. Render the same form
                 # again with error messages. It will be returned later.
                 html = e.render()
                 formHasErrors = True
-
         if formHasErrors is False:
             # The form is valid, store the captured data in the session.
 
             log.debug('Data captured by the form: %s' % captured)
 
+            # If there is already some data in the session.
             if itemType in session and 'form' in session[itemType]:
-                # There is already some data in the session.
-                sessionItem = session[itemType]['form']
+                sessionItem = session[itemType]['form']  # sessionItem contains values saved in session
                 if (captured.get('id') == sessionItem.get('id')
                         and captured.get('version') == sessionItem.get('version')
                         and oldCategory in captured):
@@ -191,7 +190,7 @@ def renderForm(request, itemType, **kwargs):
                     # A different item is already in the session. It will be
                     # overwriten.
                     if 'category' in captured:
-                        del(captured['category'])
+                        del (captured['category'])
                     session[itemType]['form'] = captured
 
                     log.debug('Replaced session item')
@@ -200,10 +199,10 @@ def renderForm(request, itemType, **kwargs):
                 # No data is in the session yet. Store the captured data
                 # there.
                 if 'category' in captured:
-                    del(captured['category'])
+                    del (captured['category'])
                 if itemType not in session:
                     session[itemType] = {}
-                session[itemType]['form'] = captured
+                session[itemType]['form'] = captured  # write session data to form of itemType (can be activity etc.)
 
                 log.debug('Added session item')
 
@@ -297,10 +296,10 @@ def renderForm(request, itemType, **kwargs):
                     log.debug(
                         'The complete formdata as in the session: %s'
                         % formdata)
-
+                    # check
                     diff = formdataToDiff(request, formdata, itemType)
 
-                log.debug('The diff to create/update the activity: %s' % diff)
+                log.debug('The uncleaned diff to create/update the activity: %s' % diff)
 
                 if diff is None:
                     # TODO: Is this the correct way to return an error message?
@@ -401,7 +400,7 @@ def renderForm(request, itemType, **kwargs):
                     'js': feedbackData,
                     'success': success
                 }
-
+    # END Post-request
     if formHasErrors is False:
         # If nothing was submitted or the captured form data was stored
         # correctly, create a form with the (new) current category.
@@ -409,7 +408,7 @@ def renderForm(request, itemType, **kwargs):
             colander.SchemaNode(colander.Mapping()), itemType)
         newCat = configCategoryList.findCategoryById(newCategory)
         if newCat is not None:
-            newschema.add(newCat.getForm(request))
+            newschema.add(newCat.getForm(request))  # send get request to config/form.py
         showSessionCategories = None
         if (itemJson is None or (itemType in session
                                  and 'id' in session[itemType]
@@ -669,9 +668,13 @@ def renderReadonlyForm(request, itemType, itemJson):
     geometry = json.dumps(
         itemJson['geometry']) if 'geometry' in itemJson else None
 
+    # extract deal areas as polygons, contained in dictionary
+    dealAreas = getTaggroupGeometries(itemJson)
+
     return {
         'form': html,
-        'geometry': geometry
+        'geometry': geometry,
+        'dealAreas': json.dumps(dealAreas)
     }
 
 
@@ -764,7 +767,8 @@ def renderReadonlyCompareForm(
         }
 
     data = mergeFormdata(refData, newData)
-    html = form.render(data, readonly=True)
+
+
 
     geometry = None
     if itemType == 'activities':
@@ -773,19 +777,29 @@ def renderReadonlyCompareForm(
         refGeometry = refFeature.get_geometry() if refFeature is not None \
             else None
 
+        # get polygeon geometries from taggroups
+        newDealAreas = getTaggroupGeometriesCompare(newData)
+        refDealAreas = getTaggroupGeometriesCompare(refData)
+
         geometry = json.dumps({
             'ref': {
-                'geometry': refGeometry
+                'geometry': refGeometry,
+                'dealAreas': json.dumps(refDealAreas)
             },
             'new': {
-                'geometry': newGeometry
+                'geometry': newGeometry,
+                'dealAreas': json.dumps(newDealAreas)
             },
         })
+
+    # renders form; passes variables (readonly and geometry) to template
+    ## TODO: in custom map mapping: pass params like this
+    html = form.render(data, readonly=True, geometry=geometry)
 
     return {
         'form': html,
         'geometry': geometry,
-        'reviewableMessage': reviewableMessage
+        'reviewableMessage': reviewableMessage,
     }
 
 
@@ -989,3 +1003,48 @@ def mako_renderer_compare(tmpl_name, **kw):
     kw['_'] = _
 
     return template.render(**kw)
+
+# get polygons (geometries) from itemJson
+def getTaggroupGeometries(itemJson):
+    taggroups = itemJson['taggroups']
+    dealAreas = dict();
+    for taggroup in taggroups:
+        if 'geometry' in taggroup:
+            key = taggroup.get('main_tag').get('key')
+            dealAreas[key] = (taggroup.get('geometry'))
+    return dealAreas
+
+# get polygon geometries from data
+## TODO: remove hardcoding!
+def getTaggroupGeometriesCompare(data):
+
+    dealAreas = dict()
+    if bool(data): # returns false if dictionary is empty
+        try:
+            taggroups = data.get('1') # flatten dict
+            taggroup_landarea = taggroups.get('12') # 12 is id for taggroup landarea
+
+            taggroup_keys = taggroup_landarea.keys()
+
+            for key in taggroup_keys:
+                tag = taggroup_landarea.get(key)
+
+                # if tag is a list, remove list
+                if type(tag) is list:
+                    tag = tag[0]
+
+                geometry = tag.get('map'+key)
+
+                taggroup_keys = tag.keys()
+
+                if 'Intended area (ha)' in taggroup_keys:
+                    dealAreas['Intended area (ha)'] = geometry
+                if 'Contract area (ha)' in taggroup_keys:
+                    dealAreas['Contract area (ha)'] = geometry
+                if 'Current area in operation (ha)' in taggroup_keys:
+                    dealAreas['Current area in operation (ha)'] = geometry
+            return dealAreas
+
+        except AttributeError:
+            return dealAreas ## returns empty dict
+    return dealAreas

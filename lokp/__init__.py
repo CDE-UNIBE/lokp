@@ -134,7 +134,7 @@ def main(global_config, **settings):
     """
     Map
     """
-    config.add_route('context_layers', '/app/view/layers.js')
+    config.add_route('map_variables', '/app/view/map_variables.js')
 
     """
     Files
@@ -201,7 +201,11 @@ def main(global_config, **settings):
     config.add_route(
         'activities_public_read_many', '/activities/public/{output}')
 
-    # # Read one
+    # Read selected
+    config.add_route(
+        'activities_selected_map_details', '/activities/map_selection/{uids}')
+
+    # Read one
     config.add_route('activities_read_one', '/activities/{output}/{uid}')
 
     # Read one history

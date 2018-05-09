@@ -339,6 +339,9 @@ class ConfigCategoryList(object):
         key_is_valid = False
         value_is_valid = False
 
+        if key.startswith('map') and value == {'geometry': colander.null}:
+            return True
+
         for k in self.getAllKeys():
             if key == k.getName():
                 # The current key is valid.
@@ -421,6 +424,19 @@ class ConfigCategoryList(object):
                                 t.getGridColumn()
                             ])
         return keyNames
+
+    def get_map_detail_keys(self):
+        """
+        Return a list with the names of the keys which are used for details
+        display on the map (marked with "mapdetail: true" in the configuration
+        YAML.
+        """
+        for cat in self.getCategories():
+            for thmg in cat.getThematicgroups():
+                for tg in thmg.getTaggroups():
+                    for t in tg.getTags():
+                        if t.map_detail is True:
+                            yield t.getKey().getName()
 
     def getMapSymbolKeyNames(self):
         """
@@ -533,6 +549,9 @@ class ConfigCategory(object):
         else self.getName())
         cat_form = colander.SchemaNode(
             colander.Mapping(),
+            widget=deform.widget.MappingWidget(
+                item_template='mapping/mapping_thematicgroup'
+            ),
             name=str(self.getId()),
             title=title
         )
@@ -544,6 +563,7 @@ class ConfigCategory(object):
                 default=colander.null,
                 widget=deform.widget.HiddenWidget()
             ))
+        # iterates over all thematic groups, creates a form for them and adds it to cat_form
         for thg in sorted(
                 self.getThematicgroups(), key=lambda thmg: thmg.getOrder()):
             # Get the Form for each Thematicgroup
@@ -683,15 +703,22 @@ class ConfigThematicgroup(object):
         If the form is to be rendered for comparison, a hidden field 'change'
         is added and each taggroup is added twice (once as 'ref_[ID]' and once
         as 'new_[ID]'.
+
+        Returns thg_form (colander SchemaNode)
         """
-        title = (self.getTranslation() if self.getTranslation() is not None
+        title = (self.getTranslation() if self.getTranslation() is not None # self: thematic group (like location)
         else self.getName())
         # For the details (readonly=True), add the title of the thematic group
         # only if specified in the configuration.
         if readonly is True and self.getShowInDetails() is False:
             title = ''
+
+        # initialises an empty form node for this thematic group
         thg_form = colander.SchemaNode(
             colander.Mapping(),
+            widget=deform.widget.MappingWidget(
+                item_template='mapping/mapping_taggroup'
+            ),
             title=title
         )
 
@@ -704,15 +731,18 @@ class ConfigThematicgroup(object):
                 widget=deform.widget.HiddenWidget()
             ))
 
+
+        # get map widget
         if self.getMap() is not None:
             # If there is some map data in this thematic group, get the widget
             # and add it to the form.
-            mapWidget = getMapWidget(self)
+            mapWidget = getMapWidget(self, geometry_type={'geometry_type': 'point'})
             thg_form.add(mapWidget)
 
+        # Iterates over each taggroup in this thematic group and creates a form (tg_form) for each taggroup
         for tg in sorted(self.getTaggroups(), key=lambda tg: tg.getOrder()):
             # Get the Form for each Taggroup
-            tg_form = tg.getForm(request)
+            tg_form = tg.getForm(request, compare=compare)
             name = str(tg.getId())
             if compare is not '':
                 tg_form.add(colander.SchemaNode(
@@ -743,7 +773,7 @@ class ConfigThematicgroup(object):
                 ))
 
             if compare is not '':
-                tg_form = tg.getForm(request)
+                tg_form = tg.getForm(request, compare=compare)
                 tg_form.add(colander.SchemaNode(
                     colander.String(),
                     name='change',
@@ -835,6 +865,20 @@ class ConfigTaggroup(object):
         self.repeatable = False
         self.geometry = False
         self.order = 9999
+        self.map = None
+
+    def setMap(self, map):
+        """
+        Set the map of this thematic group.
+        """
+        if isinstance(map, ConfigMap):
+            self.map = map
+
+    def getMap(self):
+        """
+        Return the map of this thematic group.
+        """
+        return self.map
 
     def getId(self):
         """
@@ -913,12 +957,14 @@ class ConfigTaggroup(object):
                 return True
         return False
 
-    def getForm(self, request):
+    def getForm(self, request, compare=''):
         """
         Prepare the form node for this taggroup, append the forms of its  tags
         and return it.
         """
-        tg_form = colander.SchemaNode(colander.Mapping(), name='tg')
+        tg_form = colander.SchemaNode(
+            colander.Mapping(),
+            name='tg')
         maintag = self.getMaintag()
         # First add the maintag
         if maintag is not None:
@@ -941,6 +987,17 @@ class ConfigTaggroup(object):
             missing=colander.null
         ))
         tg_form.validator = self.maintag_validator
+
+        # Only add map widget in normal form view. In compare and review mode,
+        # do not add map widget as polygons are shown all on the same map
+        # (rendered separately) and adding the map widget only screws up the
+        # hierarchy of cstruct data.
+        if self.getMap() is not None and compare == '':
+            # If there is some map data in this tag group, get the widget
+            # and add it to the form.
+            mapWidget = getMapWidget(self, {'geometry_type': 'polygon'})
+            tg_form.add(mapWidget)
+
         return tg_form
 
     def maintag_validator(self, form, value):
@@ -956,7 +1013,7 @@ class ConfigTaggroup(object):
             # ... check if one of the other values is set
             hasOtherValuesSet = False
             for (k, v) in value.items():
-                if k != mainkey and v != colander.null and k != 'tg_id':
+                if k != mainkey and v != colander.null and k != 'tg_id' and v != {'geometry': colander.null}:  # allow validation when geometry is empty
                     hasOtherValuesSet = True
             if hasOtherValuesSet:
                 # TODO: Translation
@@ -977,6 +1034,7 @@ class ConfigTag(object):
         self.values = []
         self.mandatory = False
         self.desired = False
+        self.map_detail = False
         self.involvementOverview = None
         self.gridColumn = None
         self.mapSymbol = None
@@ -1909,10 +1967,11 @@ def getCategoryList(request, itemType, **kwargs):
             )
 
             # Loop the taggroups of the thematic group
+            # whose ids can be order/map defined in .yml
             for (tgroup_id, tags) in taggroups.items():
 
                 if tgroup_id == 'order':
-                    thematicgroup.setOrder(tags)
+                    thematicgroup.setOrder(tags)  # ??
                     continue
 
                 if tgroup_id == 'showindetails':
@@ -1947,7 +2006,7 @@ def getCategoryList(request, itemType, **kwargs):
                     thematicgroup.setMap(map)
                     continue
 
-                # Create a taggroup out of it
+                # Create a taggroup out of it (only if all above conditions are false)
                 taggroup = ConfigTaggroup(tgroup_id)
 
                 # Loop the keys of the taggroup
@@ -2001,6 +2060,9 @@ def getCategoryList(request, itemType, **kwargs):
                             if 'gridcolumn' in key_config:
                                 tag.setGridColumn(key_config['gridcolumn'])
 
+                            if 'mapdetail' in key_config:
+                                tag.map_detail = True
+
                             if 'mapsymbol' in key_config:
                                 tag.setMapSymbol(key_config['mapsymbol'])
 
@@ -2029,7 +2091,10 @@ def getCategoryList(request, itemType, **kwargs):
                             taggroup.setRepeatable(True)
 
                         if key_id == 'geometry' and key_config is True:
-                            taggroup.setGeometry(True)
+                            taggroup.setGeometry(True)  # defines whether the tag group can have geometry
+                            map = ConfigMap('map'+ str(taggroup.getId()))
+                            map.setMode('singlepoint')
+                            taggroup.setMap(map)
 
                         if key_id == 'order' and key_config is not None:
                             taggroup.setOrder(key_config)
@@ -2200,39 +2265,53 @@ def getCategoryList(request, itemType, **kwargs):
     return categorylist
 
 
-def getMapWidget(thematicgroup):
+def getMapWidget(thematicgroup, geometry_type):
     """
     Return a widget to be used to display the map in the form.
     The map widget (resp. its hidden lon/lat fields) is mandatory, only one
     field is marked as mandatory (lon) in order to prevent double error
     messages if it is missing.
     """
-
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
-        widget=deform.widget.MappingWidget(
-            template='customMapMapping'
+        widget=CustomMapWidget(
+            template='customMapMapping',
+            geometry_type=geometry_type,
+            edit_mode=thematicgroup.getMap().getMode()
         ),
         name=thematicgroup.getMap().getName(),
-        title=''
+        title='map'+ str(thematicgroup.id)    # add unique title for the map widget (title serves as id in customMapMapping)
     )
 
+    # elements added below are children of mapWidget
     mapWidget.add(colander.SchemaNode(
         colander.String(),
         widget=deform.widget.TextInputWidget(template='hidden'),
         name='geometry',
-        title='geometry'
+        title='geometry',
+        missing = colander.null
     ))
 
-    mapWidget.add(colander.SchemaNode(
-        colander.String(),
-        widget=deform.widget.TextInputWidget(template='hidden'),
-        name='editmode',
-        title='editmode',
-        default=thematicgroup.getMap().getMode()
-    ))
+    # all methods within the loader .js can be accessed within the widget
+    deform.widget.default_resource_registry.set_js_resources(
+        'mapwidget', None,
+        'lokp:static/lib/leaflet/leaflet.js',
+        'lokp:static/lib/leaflet/leaflet.markercluster.js',
+        'lokp:static/lib/leaflet/Leaflet.GoogleMutant.js',
+        'lokp:static/lib/leaflet/leaflet.draw.js',
+        '/app/view/map_variables.js',
+        'lokp:static/lib/chroma/chroma.min.js',
+        'lokp:static/js/maps2/base.js',
+        'lokp:static/js/maps/form.js',
+        'lokp:static/js/maps/drawPolygonFeature.js'
+    )
+    deform.widget.default_resource_registry.set_css_resources(
+        'mapwidget', None,
+        'lokp:static/css/leaflet.css',
+        'lokp:static/css/leaflet.draw.css')
 
     return mapWidget
+
 
 
 def getInvolvementWidget(request, configInvolvement, compare=''):
@@ -2245,7 +2324,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
 
     template = 'customInvolvementMapping'
     if configInvolvement.getItemType() == 'stakeholders':
-        readonlyTemplate = 'readonly/customInvolvementMappingStakeholder'
+        readonlyTemplate = 'readonly/customInvolvementMappingStakeholder' # why read only template?
     else:
         readonlyTemplate = 'readonly/customInvolvementMappingActivity'
 
@@ -2253,6 +2332,7 @@ def getInvolvementWidget(request, configInvolvement, compare=''):
         'involvementwidget', None, 'lokp:static/js/form/involvement.js',
         'lokp:static/lib/jquery-ui/jquery-ui.min.js'
     )
+
     deform.widget.default_resource_registry.set_css_resources(
         'involvementwidget', None, 'lokp:static/lib/jquery-ui/jquery-ui.min.css')
     invForm = colander.SchemaNode(
@@ -2576,3 +2656,14 @@ class CustomInvolvementWidget(deform.widget.MappingWidget):
     Custom widget only used to specify additional requirements.
     """
     requirements = (('involvementwidget', None),)
+
+
+class CustomMapWidget(deform.widget.MappingWidget):
+    requirements = (('mapwidget', None),)
+
+    def get_template_values(self, field, cstruct, kw):
+        kw.update({
+            'geometry_type': self.geometry_type,
+            'editmode': self.edit_mode,
+        })
+        return super().get_template_values(field, cstruct, kw)

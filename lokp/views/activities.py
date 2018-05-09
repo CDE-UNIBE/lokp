@@ -5,11 +5,12 @@ import urllib.request
 from pyramid.httpexceptions import HTTPForbidden, HTTPNotFound, HTTPBadRequest, \
     HTTPUnauthorized, HTTPFound, HTTPInternalServerError
 from pyramid.i18n import get_localizer
-from pyramid.renderers import render_to_response
+from pyramid.renderers import render_to_response, render
 from pyramid.response import Response
 from pyramid.security import has_permission, ACLAllowed
 from pyramid.view import view_config
 
+from lokp.config.form import getCategoryList
 from lokp.models import DBSession, Activity, Language, A_Key, A_Tag, A_Tag_Group
 from lokp.authentication import get_user_privileges
 from lokp.config.customization import get_customized_template_path, \
@@ -92,6 +93,7 @@ class ActivityView(BaseView):
     @view_config(route_name='activities_read_many')
     def read_many(self, public=False):
         """
+        Handels both creation of form and reading form parameters
         Return many :term:`Activities`.
 
         .. seealso::
@@ -202,7 +204,7 @@ class ActivityView(BaseView):
                 raise HTTPForbidden()
 
             new_involvement = self.request.params.get('inv', None)
-            template_values = renderForm(
+            template_values = renderForm(  # render form renders form AND handels parameters passed with post request
                 self.request, 'activities', inv=new_involvement)
 
             if isinstance(template_values, Response):
@@ -268,6 +270,74 @@ class ActivityView(BaseView):
 
         else:
             raise HTTPNotFound()
+
+    @view_config(
+        route_name='activities_selected_map_details', renderer='string')
+    def read_selected(self):
+        """
+        Return a rendered HTML string with the details of one or multiple
+        activities. Uses the protocol to query the data, extracts map details
+        keys (defined by "mapdetail: true" in the configuration YAML) and passes
+        it to the customized template for rendering.
+
+        :return: str.
+        """
+        max_activities_visible = 3
+
+        uids_string = self.request.matchdict.get('uids', None)
+        uids = [
+            uid for uid in uids_string.split(',') if validate_uuid(uid) is True]
+
+        if not uids:
+            raise HTTPNotFound()
+
+        activity_detail_keys = list(getCategoryList(
+            self.request, 'a').get_map_detail_keys())
+        stakeholder_detail_keys = list(getCategoryList(
+            self.request, 'sh').get_map_detail_keys())
+
+        activity_list = []
+        for uid in uids[:max_activities_visible]:
+            read_one = activity_protocol.read_one(
+                self.request, uid=uid, public=False, translate=False)
+
+            activity = read_one['data'][0]
+
+            activity_dict = {
+                'identifier': uid,
+                'short_identifier': shorten_uuid(uid),
+            }
+            for taggroup in activity.get('taggroups', []):
+                key = taggroup.get('main_tag', {}).get('key')
+                value = taggroup.get('main_tag', {}).get('value')
+                if key in activity_detail_keys:
+                    if key not in activity_dict:
+                        activity_dict[key] = []
+                    activity_dict[key].append(value)
+
+            stakeholder_list = []
+            for stakeholder in activity.get('involvements', []):
+                stakeholder_dict = {}
+                for taggroup in stakeholder.get('data', {}).get(
+                        'taggroups', []):
+                    key = taggroup.get('main_tag', {}).get('key')
+                    value = taggroup.get('main_tag', {}).get('value')
+                    if key in stakeholder_detail_keys:
+                        if key not in stakeholder_dict:
+                            stakeholder_dict[key] = []
+                        stakeholder_dict[key].append(value)
+                if stakeholder_dict:
+                    stakeholder_list.append(stakeholder_dict)
+
+            activity_list.append((activity_dict, stakeholder_list))
+
+        return render(get_customized_template_path(
+            self.request, 'parts/items/activities_map_details.mak'),
+            {
+                'activity_list': activity_list,
+                'additional_activities': len(uids) - max_activities_visible,
+            }, self.request)
+
 
     @view_config(route_name='activities_read_one')
     def read_one(self, public=False):

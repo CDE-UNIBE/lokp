@@ -1,477 +1,301 @@
 /**
- * Necessary variables with translated text for this file (must be defined and
- * translated in template):
- * tForSuccess
- * tForInvalidFormat
+ * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId. This function can be used to
+ * create a form map (used for geometry input) or for the map shown in the details page.
  *
+ * mapId:   id of div container which should contain this map
+ * options: dictionary containing the following options:
+ *          pointsVisible: Boolean, points are displayed if true
+ *           pointsCluster: Boolean, points are clustered if true
+ *          geometry_type: Specifies whether this map allows drawing of 'point' or 'polygon'. Parameter required for form map.
  *
- * For Map Content (Activities)
- * mapValues
- * mapCriteria
- * aKeys
- * shKeys
- * areaNames
- * readonly
+ *          ----Only for Details page (Readonly)----
+ *          readonly: Specifies whether this map is added to readonly (=details) page or in the form
+ *          dbLocationGeometry: point geometry with the location of this deal (from database).
+ *          dbDealAreas: list of polygons for each intended area, contract area and current area.
  */
-
-var geographicProjection = new OpenLayers.Projection("EPSG:4326");
-var sphericalMercatorProjection = new OpenLayers.Projection("EPSG:900913");
-var geojsonFormat = new OpenLayers.Format.GeoJSON({
-    'internalProjection': sphericalMercatorProjection,
-    'externalProjection': geographicProjection
-});
-var selectCtrl,
-    geometryLayer,
-    removeLayer;
-
-$(document).ready(function() {
-
-    /** Settings **/
-    pointsCluster = false;
-    pointsVisible = false;
-    mapInteractive = false;
-    contextLegendInformation = false;
-    polygonLoadOnStart = false;
-
-    /**
-     * Map and layers
-     */
-    var layers = getBaseLayers();
-    var markerStyle = new OpenLayers.StyleMap({
-        'default': OpenLayers.Util.applyDefaults({
-            externalGraphic: '/static/img/pin_darkred.png',
-            graphicHeight: 25,
-            graphicOpacity: 0.8,
-            graphicYOffset: -25
-        }, OpenLayers.Feature.Vector.style["default"])
+function createMap(mapId, options) {
+    var baseLayers = getBaseLayers();
+    var activeBaseLayer = Object.values(baseLayers)[0];
+    var map = L.map(mapId, {
+        layers: activeBaseLayer  // Initially only add first layer
     });
-    removeLayer = new OpenLayers.Layer.Vector('RemovePoints', {
-        styleMap: markerStyle,
-        eventListeners: {
-            'featureselected': removeFeature
-        }
-    });
-    layers.push(removeLayer);
-    geometryLayer = new OpenLayers.Layer.Vector('Geometry', {
-        styleMap: markerStyle,
-        eventListeners: {
-            'featureadded': updateFormCoordinates
-        }
-    });
-    layers.push(geometryLayer);
-
-    map = new OpenLayers.Map('googleMapNotFull', {
-        displayProjection: geographicProjection,
-        projection: sphericalMercatorProjection,
-        controls: [
-            new OpenLayers.Control.Attribution(),
-            new OpenLayers.Control.Navigation({
-                dragPanOptions: {
-                    enableKinetic: true
-                }
-            }),
-            new OpenLayers.Control.Zoom({
-                zoomInId: 'btn-zoom-in',
-                zoomOutId: 'btn-zoom-out'
-            })
-        ],
-        layers: layers
-    });
-    setBaseLayerByName(map, 'satelliteMap');
-    initializeThisPolygonContent();
-    initializeMapContent();
-    initializeContextLayers();
-    initializePolygonLayers();
-
-    /**
-     * Map Events
-     */
-     initializeBaseLayerControl();
-     initializeContextLayerControl();
-     initializePolygonLayerControl();
-     initializeMapSearch();
-
-    $('.form-map-menu-toggle').click(function() {
-        $('#form-map-menu-content').toggle();
-        var m = $('.form-map-menu');
-        m.toggleClass('active');
-        if (m.hasClass('active')) {
-            $(this).button('close');
-        } else {
-            $(this).button('reset');
-        }
-        return false;
+    map.on('moveend', function (e) {
+        $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
     });
 
-    if (coordsSet === true) {
-        geometryLayer.addFeatures(geojsonFormat.read(geometry));
-        // Map is zoomed only after adding any polygon layers to prevent it from
-        // zooming twice.
-    } else {
-        if (bbox) {
-            map.zoomToExtent(bbox, true);
-        } else {
-            map.zoomToMaxExtent();
+    // Initial map extent
+    var initialExtent = L.geoJSON(window.mapVariables.profile_polygon).getBounds();
+    var locationCookie = $.cookie('_LOCATION_');
+    if (locationCookie) {
+        // If a valid cookie is set, use this as extent
+        var parts = locationCookie.split(',');
+        if (parts.length === 4) {
+            initialExtent = L.latLngBounds(
+                L.latLng(parts[1], parts[0]),
+                L.latLng(parts[3], parts[2]));
         }
     }
+    map.fitBounds(initialExtent);
 
-    if (!readonly) {
-
-        selectCtrl = new OpenLayers.Control.SelectFeature(removeLayer);
-        map.addControl(selectCtrl);
-
-        toggleMode('add');
-
-        map.events.register('click', map, function(e) {
-            if (geometryLayer.getVisibility()) {
-                var position = map.getLonLatFromPixel(e.xy);
-                addToMap(position);
-            }
+    // Disable dragging of the map for the floating buttons
+    var ctrl = L.DomUtil.get('map-floating-buttons-' + mapId);
+    if (ctrl) {
+        ctrl.addEventListener('mouseover', function () {
+            map.dragging.disable();
         });
-
-        // Listen to 'paste' events on the coordinate field
-        $('#map-coords-field').on('paste', function() {
-            setTimeout(function() {
-                parseCoordinates();
-            }, 50);
-        });
-
-        $('#btn-add-point').click(function() {
-            toggleMode('add');
-        });
-        $('#btn-remove-point').click(function() {
-            toggleMode('remove');
+        ctrl.addEventListener('mouseout', function () {
+            map.dragging.enable();
         });
     }
 
-    $('.collapse').on('show', function() {
-        toggleChevron($(this).parent(), 0);
-    });
-    $('.collapse').on('hide', function() {
-        toggleChevron($(this).parent(), 1);
-    });
+    // Hide loading overlay
+    $('.map-loader[data-map-id="' + mapId + '"]').hide();
 
-    $('.ttip').tooltip({
-        container: 'body'
-    });
+    if (typeof window.lokp_maps === 'undefined') {
+        window.lokp_maps = {};
+    }
+    window.lokp_maps[mapId] = {
+        map: map,
+        baseLayers: baseLayers,
+        contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
+        polygonLayers: {},
+        // Keep track of the currently active base layer so it can be changed
+        // programmatically
+        activeBaseLayer: activeBaseLayer,
+        activeMapMarker: null,
+        // Initial map variables
+        mapVariables: window.mapVariables,
+        options: options
+    };
 
-    $('.ttip-bottom').tooltip({
-        container: 'body',
-        placement: 'bottom'
-    });
-});
+    initBaseLayerControl();
+    initMapContent(map);
+    initPolygonLayers(mapId, window.mapVariables.polygon_keys);
+    initContextLayerControl();
+    initMapSearch(mapId);
 
-function initializeThisPolygonContent() {
-
-    if (version === null || version === 0 || identifier === null
-        || identifier === '-') return;
-
-    $.ajax({
-        url: '/activities/geojson/' + identifier,
-        data: {
-            'v': version
-        },
-        cache: false,
-        success: function(data) {
-            var features = geojsonFormat.read(data);
-            var fLayers = [];
-
-            if (features.length === 0) {
-                // If there are no polygons, hide the entire section.
-                $('#thisDealSection').hide();
-            } else {
-                // Add the polygon layers in the same order as the areaNames.
-                for (var a in areaNames) {
-
-                    $.each(features, function() {
-
-                        // The name is the first (and only) attribute
-                        for (var n in this.attributes) break;
-
-                        var an = areaNames[a];
-                        if ($.isArray(areaNames[a])) {
-                            an = areaNames[a][0];
-                        }
-                        if (n !== an) {
-                            if ("custom_area_names" in window) {
-                                n = custom_area_names[a];
-                            } else {
-                                return;
-                            }
-                        }
-
-                        // Add the legend
-                        var t = [];
-                        t.push(
-                            '<li>',
-                            '<div class="checkbox-modified-small">',
-                            '<input class="input-top this-area-layer-checkbox" type="checkbox" value="' + n + '" id="checkboxThis' + n + '" checked="checked">',
-                            '<label for="checkboxThis' + n + '"></label>',
-                            '</div>',
-                            '<p class="context-layers-description">',
-                            '<span class="vectorLegendSymbolSmall" style="',
-                                'border: 2px solid #C26464;',
-                            '"><span class="vectorLegendSymbolSmallInside" style="',
-                                'background-color: ' + getColor(a) + ';',
-                                'opacity: 0.5;',
-                                'filter: alpha(opacity=50)',
-                            '"></span></span>',
-                            n,
-                            '</p>',
-                            '</li>'
-                        );
-                        $('#map-this-areas-list').append(t.join(''));
-
-                        // Add the layer
-                        var styleMap = new OpenLayers.StyleMap({
-                            'default': getPolygonStyle(a, '#C26464')
-                        });
-                        var l = new OpenLayers.Layer.Vector('this'+n, {
-                            styleMap: styleMap
-                        });
-                        l.addFeatures([this]);
-                        map.addLayer(l);
-
-                        fLayers.push(l);
-                    });
-                }
-
-                $('.this-area-layer-checkbox').click(function(e) {
-                    if (e.target.value) {
-                        setPolygonLayerByName(map, 'this'+e.target.value, e.target.checked);
-                    }
-                });
-
-                // For the deal details, expand the options so the legend is
-                // visible.
-                if (readonly === true) {
-                    $('.form-map-menu-toggle').click();
-                }
-            }
-
-            // Zoom
-            var bbox = geometryLayer.getDataExtent();
-            $.each(fLayers, function() {
-                bbox.extend(this.getDataExtent());
-            });
-            map.zoomToExtent(bbox, true);
-            // Adjust zoom level so points are not zoomed in too much
-            map.zoomTo(Math.min(zoomlevel, map.getZoom()-1));
-        }
-    });
-
-}
-
-function toggleMode(mode) {
-    if (mode === 'add') {
-        removeLayer.setVisibility(false);
-        geometryLayer.setVisibility(true);
-        selectCtrl.deactivate();
-    } else if (mode === 'remove') {
-        geometryLayer.setVisibility(false);
-        removeLayer.setVisibility(true);
-        removeLayer.destroyFeatures();
-        var f = geometryLayer.features[0];
-        if (f) {
-            var mp = f.geometry.clone();
-            if (mp.CLASS_NAME === 'OpenLayers.Geometry.Point') {
-                var sp = mp.clone();
-                mp = new OpenLayers.Geometry.MultiPoint();
-                mp.addPoint(sp);
-            }
-            var points = mp.components;
-            $.each(points, function() {
-                removeLayer.addFeatures([new OpenLayers.Feature.Vector(this)]);
-            });
-        }
-        selectCtrl.activate();
+    if (options.readonly !== true) {
+        var geometry_type = options.geometry_type['geometry_type'];
+        initDrawPolygonControl(map, geometry_type, mapId);
+    }
+    else {
+        initDetailsMap(map, options);
     }
 }
 
-function removeFeature(e) {
-    var of = e.feature;
-    var og = of.geometry;
-    of.layer.removeFeatures([of]);
-    var nf = geometryLayer.features[0];
-    var g = nf.geometry;
-    var ng = g.clone();
-    $.each(ng.components, function() {
-        if (this.CLASS_NAME && this.CLASS_NAME === 'OpenLayers.Geometry.Point'
-            && this.equals(og)) {
-            ng.removePoint(this);
-            return;
-        }
-    });
-    geometryLayer.destroyFeatures();
-    geometryLayer.addFeatures([new OpenLayers.Feature.Vector(ng)]);
+
+/*****************************************************
+ * Helper Methods
+ ****************************************************/
+
+/**
+ *  Creates a marker with dbLocationGeometry and adds it to the map.
+ *
+ * @param map           leaflet map to which the marker is added
+ * @param dbLocationGeometry      geometry to be added
+ */
+function addDealLocationMarker(map, dbLocationGeometry) {
+    // change coordinates to lat/long
+    var coordLatLong = dbLocationGeometry.coordinates.reverse();
+    L.marker(coordLatLong).addTo(map);
 }
 
 /**
- * Set a marker on the map at the given position and store the coordinates in
- * the hidden field.
- * @param {OpenLayers.LonLat} lonlat
+ * For each polygon in dbDealAreas, a layer is added to the map in the details page. Also creates a layer control
+ * (L.control) and adds the polygons to it, allowing the polygons to be toggled manually.
+ *
+ * @param map
+ * @param dbDealAreas     Dictionary containing polygons for areas intended area, contract area current area
  */
-function addToMap(lonlat) {
-    if (lonlat === null || lonlat.CLASS_NAME !== 'OpenLayers.LonLat') return;
-    var p = new OpenLayers.Geometry.Point(lonlat.lon, lonlat.lat);
-    if (editmode === 'singlepoint') {
-        geometryLayer.destroyFeatures();
-        geometryLayer.addFeatures([new OpenLayers.Feature.Vector(p)]);
-    } else if (editmode === 'multipoints') {
-        var f = geometryLayer.features[0];
-        var mp;
-        if (f) {
-            mp = f.geometry.clone();
-            if (mp.CLASS_NAME === 'OpenLayers.Geometry.Point') {
-                var sp = mp.clone();
-                mp = new OpenLayers.Geometry.MultiPoint();
-                mp.addPoint(sp);
-            }
-        } else {
-            mp = new OpenLayers.Geometry.MultiPoint();
-        }
-        mp.addPoint(p);
-        geometryLayer.destroyFeatures();
-        geometryLayer.addFeatures([new OpenLayers.Feature.Vector(mp)]);
+function addDealAreasToLayerControl(map, dbDealAreas) {
+    // iterate over dictionary
+
+    var layerDictionary = [];
+    $.each(dbDealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
+        // convert to leaflet polygon
+        var polyCoords = polygon.coordinates;
+        polyCoords = polyCoords[0]; // remove unnecessary array depth
+
+        // change each long lat coordinate within polyCoords to lat long
+        var polyCoordsLatLon = changeToLatLon(polyCoords);
+
+        var layerColor = getLayerColor(key);
+
+        var polygonL = L.polygon(polyCoordsLatLon, {color: layerColor});
+        map.addLayer(polygonL); // polygons are initially added to the map
+        layerDictionary[key] = polygonL;
+
+        // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
+    });
+
+    // add Layers to layer control
+    // try: https://gis.stackexchange.com/questions/178945/leaflet-customizing-the-layerswitcher
+    // http://embed.plnkr.co/Je7c0m/
+    if (!jQuery.isEmptyObject(layerDictionary)) {  // only add layer control if layers aren't empty
+        L.control.layers([], layerDictionary).addTo(map);
     }
 }
 
 /**
- * Update the form field containing the coordinates based on the feature in the
- * geometry layer.
- * @param {OpenLayers.Event} event
+ *
+ * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
+ * @returns {Array} An array containing arrays with a lat/long coordinate pair
  */
-function updateFormCoordinates(event) {
-    var feature;
-    if (event && event.feature && event.feature.geometry) {
-        feature = event.feature;
-    } else {
-        var layers = map.getLayersByName('Geometry');
-        if (layers.length === 0) return;
-        var geometryLayer = layers[0];
-        if (!geometryLayer.features || geometryLayer.features.length !== 1
-            || !geometryLayer.features[0].geometry) return;
-        feature = geometryLayer.features[0];
+function changeToLatLon(polyCoords) {
+    var polyCoordsLatLon = [];
+    for (var i = 0; i < polyCoords.length; i++) {
+        var coordLongLat = polyCoords[i];
+        var coordLatLong = coordLongLat.reverse();
+        polyCoordsLatLon.push(coordLatLong);
     }
-    var field = $('input[name=geometry]');
-    if (field.length !== 1) return;
-    if (feature.geometry.components && feature.geometry.components.length === 0) {
-        $(field[0]).val('');
-    } else {
-        $(field[0]).val(geojsonFormat.write(feature.geometry));
+    return polyCoordsLatLon;
+}
+
+
+/**
+ *
+ * @param layerLabel label of the layer for which a color is defined based on it name
+ * @return string specifying a color
+ */
+function getLayerColor(layerLabel) {
+    var layerColor;
+    if (layerLabel === 'Intended area (ha)') {  // TODO: get string from config
+        layerColor = 'lightgreen';
     }
+    if (layerLabel === 'Contract area (ha)') {
+        layerColor = 'green';
+    }
+    if (layerLabel === 'Current area in operation (ha)') {
+        layerColor = 'blue';
+    }
+    return layerColor
+}
+
+function initDetailsMap(map, options) {
+    var dbLocationGeometry = options.dbLocationGeometry;
+    var dbDealAreas = options.dbDealAreas;
+    var coordinatesLatLong = dbLocationGeometry.coordinates;
+
+    addDealLocationMarker(map, dbLocationGeometry); // geometry and dealAreas are defined in mapform.mak!!
+    zoomToDealLocation(map, coordinatesLatLong);
+    addDealAreasToLayerControl(map, dbDealAreas);
 }
 
 /**
- * Parse coordinates entered in the textfield.
- * Coordinates are assumed to always be in WGS84.
+ * Function is called when the 'parse' button is clicked. The entered coordinates are converted to a list of lat/long
+ * coordinates. An event is dispatched containing the coordinates, which is then handled in drawPolygonFeature.js
+ *
+ * @param mapTitle: the id of the map container for which the function is called.
  */
-function parseCoordinates() {
-    var coordsField = $('#map-coords-field').val();
-    var coordsFormat = $('#map-coords-format').val();
+function parseCoordinates(mapTitle) {
+    if (mapTitle === 'map11') {
 
-    // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
 
-    // It seems to be necessary to escape the values. Otherwise, the degree
-    // symbol (°) is not recognized.
-    var str = escape(coordsField);
-    // However, we do need to replace the spaces again do prevent regex error.
-    str = str.replace(/%20/g, ' ');
+        var coordsField = $('#map-coords-field').val(); // read values from mak
+        var coordsFormat = $('#map-coords-format').val();
 
-    var pattern, matches;
-    var latsign, longsign, d1, m1, s1, d2, m2, s2;
-    var latitude, longitude, lonlat;
+        // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
 
-    if (coordsFormat == 1) {
-        // 46° 57.1578 N 7° 26.1102 E
-        pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
-        matches = str.match(pattern);
-        if (matches) {
-            latsign = (matches[3]==='S') ? -1 : 1;
-            longsign = (matches[6]==='W') ? -1 : 1;
-            d1 = parseFloat(matches[1]);
-            m1 = parseFloat(matches[2]);
-            d2 = parseFloat(matches[4]);
-            m2 = parseFloat(matches[5]);
-            latitude = latsign * (d1 + (m1/60.0));
-            longitude = longsign * (d2 + (m2/60.0));
-            lonlat = new OpenLayers.LonLat(longitude, latitude);
+        // It seems to be necessary to escape the values. Otherwise, the degree
+        // symbol (°) is not recognized.
+        var str = escape(coordsField);
+        // However, we do need to replace the spaces again do prevent regex error.
+        str = str.replace(/%20/g, ' ');
+
+        var pattern, matches;
+        var latsign, longsign, d1, m1, s1, d2, m2, s2;
+        var latitude, longitude, latlong;
+
+        if (coordsFormat == 1) {
+            // 46° 57.1578 N 7° 26.1102 E
+            pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[3] === 'S') ? -1 : 1;
+                longsign = (matches[6] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[1]);
+                m1 = parseFloat(matches[2]);
+                d2 = parseFloat(matches[4]);
+                m2 = parseFloat(matches[5]);
+                latitude = latsign * (d1 + (m1 / 60.0));
+                longitude = longsign * (d2 + (m2 / 60.0));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 2) {
+            // 46° 57' 9.468" N 7° 26' 6.612" E
+            pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[4] === 'S') ? -1 : 1;
+                longsign = (matches[8] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[1]);
+                m1 = parseFloat(matches[2]);
+                s1 = parseFloat(matches[3]);
+                d2 = parseFloat(matches[5]);
+                m2 = parseFloat(matches[6]);
+                s2 = parseFloat(matches[7]);
+                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 3) {
+            // N 46° 57.1578 E 7° 26.1102
+            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[1] === 'S') ? -1 : 1;
+                longsign = (matches[4] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[2]);
+                m1 = parseFloat(matches[3]);
+                d2 = parseFloat(matches[5]);
+                m2 = parseFloat(matches[6]);
+                latitude = latsign * (d1 + (m1 / 60.0));
+                longitude = longsign * (d2 + (m2 / 60.0));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 4) {
+            // N 46° 57' 9.468" E 7° 26' 6.612"
+            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latsign = (matches[1] === 'S') ? -1 : 1;
+                longsign = (matches[5] === 'W') ? -1 : 1;
+                d1 = parseFloat(matches[2]);
+                m1 = parseFloat(matches[3]);
+                s1 = parseFloat(matches[4]);
+                d2 = parseFloat(matches[6]);
+                m2 = parseFloat(matches[7]);
+                s2 = parseFloat(matches[8]);
+                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+                latlong = [latitude, longitude];
+            }
+        } else if (coordsFormat == 5) {
+            // 46.95263, 7.43517
+            pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
+            matches = str.match(pattern);
+            if (matches) {
+                latlong = [matches[1], matches[2]];
+            }
         }
-    } else if (coordsFormat == 2) {
-        // 46° 57' 9.468" N 7° 26' 6.612" E
-        pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
-        matches = str.match(pattern);
-        if (matches) {
-            latsign = (matches[4]==='S') ? -1 : 1;
-            longsign = (matches[8]==='W') ? -1 : 1;
-            d1 = parseFloat(matches[1]);
-            m1 = parseFloat(matches[2]);
-            s1 = parseFloat(matches[3]);
-            d2 = parseFloat(matches[5]);
-            m2 = parseFloat(matches[6]);
-            s2 = parseFloat(matches[7]);
-            latitude = latsign * (d1 + (m1/60.0) + (s1/(60.0*60.0)));
-            longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
-            lonlat = new OpenLayers.LonLat(longitude, latitude);
-        }
-    } else if (coordsFormat == 3) {
-        // N 46° 57.1578 E 7° 26.1102
-        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
-        matches = str.match(pattern);
-        if (matches) {
-            latsign = (matches[1]==='S') ? -1 : 1;
-            longsign = (matches[4]==='W') ? -1 : 1;
-            d1 = parseFloat(matches[2]);
-            m1 = parseFloat(matches[3]);
-            d2 = parseFloat(matches[5]);
-            m2 = parseFloat(matches[6]);
-            latitude = latsign * (d1 + (m1/60.0));
-            longitude = longsign * (d2 + (m2/60.0));
-            lonlat = new OpenLayers.LonLat(longitude, latitude);
-        }
-    } else if (coordsFormat == 4) {
-        // N 46° 57' 9.468" E 7° 26' 6.612"
-        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
-        matches = str.match(pattern);
-        if (matches) {
-            latsign = (matches[1]==='S') ? -1 : 1;
-            longsign = (matches[5]==='W') ? -1 : 1;
-            d1 = parseFloat(matches[2]);
-            m1 = parseFloat(matches[3]);
-            s1 = parseFloat(matches[4]);
-            d2 = parseFloat(matches[6]);
-            m2 = parseFloat(matches[7]);
-            s2 = parseFloat(matches[8]);
-            latitude = latsign * (d1 + (m1/60.0) + (s1/(60.0*60.0)));
-            longitude = longsign * (d2 + (m2/60.0) + (s2/(60.0*60.0)));
-            lonlat = new OpenLayers.LonLat(longitude, latitude);
-        }
-    } else if (coordsFormat == 5) {
-        // 46.95263, 7.43517
-        pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
-        matches = str.match(pattern);
-        if (matches) {
-            lonlat = new OpenLayers.LonLat(matches[2], matches[1]);
-        }
-    }
 
-    if (lonlat != null) {
-        // Transform the coordinates.
-        var lonlatTransformed = lonlat.transform(
-            new OpenLayers.Projection("EPSG:4326"),
-            map.getProjectionObject()
-        );
+        if (latlong != null) {
+            // Create the event. This way of event handling should be compatible with IE
+            var event = new CustomEvent('sendCoordinates', {detail: latlong}); // create event and add coordinates
 
-        // Set the marker and zoom to it.
-        addToMap(lonlatTransformed);
-        map.setCenter(lonlatTransformed);
+            // Define that the event name is 'sendCoordinates'.
+            event.initEvent('sendCoordinates', true, true);
 
-        showParseFeedback(tForSuccess, 'success');
-    } else {
-        showParseFeedback(tForInvalidFormat, 'error');
+            window.dispatchEvent(event);
+
+        } else {
+            showParseFeedback(tForInvalidFormat, 'error');
+        }
     }
     return false;
 }
+
+
 
 /**
  * Function to show or hide the div to parse coordinates.
@@ -501,3 +325,4 @@ function showParseFeedback(msg, textStyle) {
         '</span>'
     ].join(''));
 }
+

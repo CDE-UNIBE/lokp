@@ -1,8 +1,13 @@
+import json
+
 import yaml
 from pyramid.view import view_config
 
 from lokp.config.customization import local_profile_directory_path
 from lokp.config.form import getCategoryList
+from lokp.config.profile import get_current_profile_extent
+from lokp.views.filter import getFilterValuesForKey
+from lokp.views.form import form_geomtaggroups
 
 
 def getMapSymbolKeys(request):
@@ -28,10 +33,19 @@ def getMapSymbolKeys(request):
     return sorted(mapSymbolKeys, key=lambda k: k[2])
 
 
-@view_config(route_name='context_layers', renderer='javascript')
-def get_context_layers(request):
-
-    res = "var contextLayers = ["
+@view_config(route_name='map_variables', renderer='javascript')
+def get_map_variables(request):
+    """
+    Dump map variables such as available keys for symbolization of points etc.
+    as a JS variable to be used when creating maps.
+    """
+    _ = request.translate
+    map_symbols = getMapSymbolKeys(request)
+    map_criteria = map_symbols[0]
+    map_symbol_values = [
+        v[0] for v in sorted(getFilterValuesForKey(
+            request, predefinedType='a', predefinedKey=map_criteria[1]),
+            key=lambda value: value[1])]
 
     # Read the global configuration file
     try:
@@ -39,33 +53,19 @@ def get_context_layers(request):
             local_profile_directory_path(request), 'application.yml'), 'r')
         config = yaml.load(global_stream)
     except IOError:
-        return
+        config = {}
 
-    if 'layers' in config['application']:
-        layers = config['application']['layers']
-
-        for layer in layers:
-            res += "new OpenLayers.Layer.WMS(\""
-            res += layer['name']
-            res += "\",\""
-            res += layer['url']
-            res += "\",{\n"
-
-            for o in layer['wms_options']:
-                for config, value in o.items():
-                    res += "%s: %s,\n" % (config, _cast_type(config, value))
-
-            res += "},{\n"
-            for o in layer['ol_options']:
-                for config, value in o.items():
-                    res += "%s: %s,\n" % (config, _cast_type(config, value))
-
-            res += "}"
-            res += "),\n"
-
-    res += "]\n"
-
-    return res
+    return 'var mapVariables = ' + json.dumps({
+        'map_symbol_values': map_symbol_values,
+        'map_criteria': map_criteria,
+        'map_criteria_all': map_symbols,
+        'context_layers': config.get('application', {}).get('layers', []),
+        'polygon_keys': form_geomtaggroups(request).get('mainkeys', []),
+        'profile_polygon': get_current_profile_extent(request),
+        'translations': {
+            'loading': _('Loading ...'),
+        }
+    })
 
 
 def _cast_type(config, value):
