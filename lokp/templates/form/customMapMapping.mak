@@ -26,10 +26,10 @@
 
 ## container containing map
 
-<div id="${field.title}" style="height: 400px;">
+<div id="${field.oid}" style="height: 400px;" class="map-div">
     ## Loading indicator
 
-    <div class="preloader-wrapper big active map-loader" data-map-id="${field.title}">
+    <div class="preloader-wrapper big active map-loader" data-map-id="${field.oid}">
         <div class="spinner-layer spinner-teal-only">
             <div class="circle-clipper left">
                 <div class="circle"></div>
@@ -44,17 +44,17 @@
     </div>
     ## Map buttons
 
-    <div class="map-floating-buttons" id="map-floating-buttons-${field.title}">
+    <div class="map-floating-buttons" id="map-floating-buttons-${field.oid}">
         <span class="range-field tooltipped" data-position="top" data-tooltip="${_('Transparency of context layers')}">
           <input type="range" class="layer-transparency-slider" min="0" max="100" value="60"
-                 data-map-id="${field.title}"/>
+                 data-map-id="${field.oid}"/>
         </span>
         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
-           data-tooltip="${_('Map Options')}" data-activates="slide-out-map-options-${field.title}">
+           data-tooltip="${_('Map Options')}" data-activates="slide-out-map-options-${field.oid}">
             <i class="material-icons">map</i>
         </a>
 ##         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
-##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.title}">
+##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.oid}">
 ##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
 ##         </a>
 ##         % if len(activeFilters) == 1:
@@ -100,18 +100,18 @@
 
 ## Map Menu
 
-<div id="slide-out-map-options-${field.title}" class="side-nav map-side-menu">
+<div id="slide-out-map-options-${field.oid}" class="side-nav map-side-menu">
 
     ## Search
 
     <div class="row map-search-container">
         <div class="input-field col s11">
             <i class="material-icons prefix">search</i>
-            <input id="js-map-search-${field.title}" class="map-search-input" name="q" type="text">
+            <input id="js-map-search-${field.oid}" class="map-search-input" name="q" type="text">
         </div>
     </div>
 
-    <ul class="collapsible" data-collapsible="accordion" data-map-id="${field.title}">
+    <ul class="collapsible" data-collapsible="accordion" data-map-id="${field.oid}">
         ## Deals
 
         <li>
@@ -121,15 +121,15 @@
             <div class="collapsible-body">
                 <form action="#" class="map-menu-form">
                     <input class="input-top js-activity-layer-toggle" type="checkbox"
-                           id="activity-layer-toggle-${field.title}" checked="checked">
-                    <label class="text-primary-color" for="activity-layer-toggle-${field.title}"
-                           style="line-height: 22px; height: 22px;" id="map-deals-symbolization-${field.title}">
+                           id="activity-layer-toggle-${field.oid}" checked="checked">
+                    <label class="text-primary-color" for="activity-layer-toggle-${field.oid}"
+                           style="line-height: 22px; height: 22px;" id="map-deals-symbolization-${field.oid}">
                         ## Current symbolization (dropdown and legend)
             </label>
-                    <ul id="map-points-list-${field.title}" class="map-legend-points-symbols">
+                    <ul id="map-points-list-${field.oid}" class="map-legend-points-symbols">
                         ## Points legend
             </ul>
-                    <div id="map-polygons-list-${field.title}">
+                    <div id="map-polygons-list-${field.oid}">
                         ## Polygon list
             </div>
                 </form>
@@ -145,24 +145,24 @@
             <div class="collapsible-body">
                 <form action="#" class="map-base-layer-entries">
                     <p>
-                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.title}" type="radio"
-                               id="satelliteMapOption-${field.title}" value="satelliteMap" checked="checked"/>
-                        <label for="satelliteMapOption-${field.title}">${_('Google Earth satellite images')}</label>
+                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.oid}" type="radio"
+                               id="satelliteMapOption-${field.oid}" value="satelliteMap" checked="checked"/>
+                        <label for="satelliteMapOption-${field.oid}">${_('Google Earth satellite images')}</label>
                     </p>
                     <p>
-                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.title}" type="radio"
-                               id="esriSatelliteMapOption-${field.title}" value="esriSatellite"/>
-                        <label for="esriSatelliteMapOption-${field.title}">${_('ESRI World Imagery')}</label>
+                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.oid}" type="radio"
+                               id="esriSatelliteMapOption-${field.oid}" value="esriSatellite"/>
+                        <label for="esriSatelliteMapOption-${field.oid}">${_('ESRI World Imagery')}</label>
                     </p>
                     <p>
-                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.title}" type="radio"
-                               id="terrainMapOption-${field.title}" value="terrainMap"/>
-                        <label for="terrainMapOption-${field.title}">${_('Google Terrain Map')}</label>
+                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.oid}" type="radio"
+                               id="terrainMapOption-${field.oid}" value="terrainMap"/>
+                        <label for="terrainMapOption-${field.oid}">${_('Google Terrain Map')}</label>
                     </p>
                     <p>
-                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.title}" type="radio"
-                               id="streetMapOption-${field.title}" value="streetMap"/>
-                        <label for="streetMapOption-${field.title}">${_('OpenStreetMap')}</label>
+                        <input class="with-gap js-base-map-layers" name="map-base-layers-${field.oid}" type="radio"
+                               id="streetMapOption-${field.oid}" value="streetMap"/>
+                        <label for="streetMapOption-${field.oid}">${_('OpenStreetMap')}</label>
                     </p>
                 </form>
             </div>
@@ -175,7 +175,7 @@
                 <i class="material-icons">layers</i>${_('Context layers')}
             </div>
             <div class="collapsible-body">
-                <form action="#" id="context-layers-list-${field.title}">
+                <form action="#" id="context-layers-list-${field.oid}">
                     ## Context layers entries
           </form>
             </div>
@@ -185,8 +185,8 @@
 
 ## Map modal (used for legend of context layers)
 
-<div id="map-modal-${field.title}" class="modal">
-    <div id="map-modal-body-${field.title}" class="modal-content">
+<div id="map-modal-${field.oid}" class="modal">
+    <div id="map-modal-body-${field.oid}" class="modal-content">
         ## Placeholder for map modal
   </div>
     <div class="modal-footer">
@@ -196,7 +196,7 @@
 
 ## Filter (only once per page)
 
-## <ul id="slide-out-filter-${field.title}" class="side-nav map-side-menu">
+## <ul id="slide-out-filter-${field.oid}" class="side-nav map-side-menu">
 ##        <%include file="lokp:customization/omm/templates/parts/filter.mak" />
 ##</ul>
 
@@ -264,7 +264,7 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
         </div>
         <div class="row">
             <div class="col s12">
-                <button id="map-coords-button" class="btn btn-small" onClick="javascript:return parseCoordinates('${field.title}');">${_('Parse')}</button>
+                <button id="map-coords-button" class="btn btn-small" onClick="javascript:return parseCoordinates('${field.oid}');">${_('Parse')}</button>
             </div>
             <div id="map-coords-message" class="col s8">
                 <!-- Placeholder -->
@@ -283,9 +283,24 @@ ${field.end_mapping()}
 
 <script>
     deform.addCallback(
-            '${field.title}',
-            function (oid) {
-                createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
+            ['${field.oid}', '${field.title}'],
+            function(args) {
+
+                var oid = args[0];
+                var title = args[1];
+
+                console.log("foo", oid, title);
+
+                if (window['loaded_maps'] === undefined) {
+                    window['loaded_maps'] = [];
+                }
+
+                if (window['loaded_maps'].indexOf(title) === -1) {
+                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
+                    window['loaded_maps'].push(title);
+                } else {
+                    $('#' + oid).hide();
+                }
             }
     );
 </script>

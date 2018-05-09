@@ -56,11 +56,7 @@ var initDrawPolygonControl = function (map, geometry_type, mapId) {
     }
 
     map.on('draw:deleted', function (e) {
-        $geometry.val("");
-        var event = new Event('build');
-        // Dispatch the event.
-        map.dispatchEvent(event);
-
+        $geometry.val(null);
     });
 
     map.on('draw:edited', function (e) {
@@ -74,7 +70,6 @@ var initDrawPolygonControl = function (map, geometry_type, mapId) {
         var layerJSON = layer.toGeoJSON();
         // set polygon value
         $geometry.val(JSON.stringify(layerJSON.geometry));
-
     });
 };
 
@@ -166,7 +161,7 @@ function defineDrawOptions(geometry_type, editableLayers) {
                     allowIntersection: false, // Restricts shapes to simple polygons
                     drawError: {
                         color: '#e1e100', // Color the shape will turn when intersects
-                        message: '<strong>Oh snap!<strong> you can\'t draw that!' // Message that will show when intersect
+                        message: 'you can\'t draw that!' // Message that will show when intersect
                     },
                     shapeOptions: {
                         color: '#bada55'
