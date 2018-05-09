@@ -285,16 +285,11 @@ ${field.end_mapping()}
     deform.addCallback(
             ['${field.oid}', '${field.title}'],
             function(args) {
-
                 var oid = args[0];
                 var title = args[1];
-
-                console.log("foo", oid, title);
-
                 if (window['loaded_maps'] === undefined) {
                     window['loaded_maps'] = [];
                 }
-
                 if (window['loaded_maps'].indexOf(title) === -1) {
                     createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
                     window['loaded_maps'].push(title);

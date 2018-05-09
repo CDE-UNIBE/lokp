@@ -7,6 +7,8 @@
     # 3: A Category
     from lokp.utils.form import structHasOnlyNullValues
     hasOnlyNullValues, depth = structHasOnlyNullValues(cstruct)
+
+    repeating_taggroup = isinstance(cstruct, list)
 %>
 
 % if not hasOnlyNullValues:
@@ -19,7 +21,7 @@
         ## Category
         ${field.serialize(cstruct, readonly=True)}
 
-    % elif depth == 2 and field.title not in ['Tg']:
+    % elif depth == 2 and field.title not in ['Tg'] and not repeating_taggroup:
         ## Thematic Group
         % if field.title == '':
             ${field.serialize(cstruct, readonly=True)}
