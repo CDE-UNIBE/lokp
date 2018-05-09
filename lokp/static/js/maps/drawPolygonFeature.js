@@ -1,10 +1,11 @@
 /**
- * Adds buttons for creating and editing polygons to the map
+ * Adds buttons for creating and editing polygons/points to the map. Polygons saved in session are drawn to the
+ * map and can be edited.
  *
- * @param map: a leaflet map with map options drawControl: true
+ * @param map: leaflet map to which draw control is added.
+ * @param geometry_type: defines whether the added draw control allows drawing of polygons or points.
+ * @param mapId: the id of the container containing map (container id is defined in customMapMapping.mak)
  */
-
-
 var initDrawPolygonControl = function (map, geometry_type, mapId) {
 
     // get geometry field in which drawn coordinates are written
@@ -40,7 +41,7 @@ var initDrawPolygonControl = function (map, geometry_type, mapId) {
     });
 
 
-    // Receive coordinates fired from customMapMapping
+    // Receive coordinates fired when coordinates are entered manually
     if (mapId == 'map11') {
         window.addEventListener('sendCoordinates', function (e) {
             clearDrawnElements(map, editableLayers);
@@ -54,35 +55,28 @@ var initDrawPolygonControl = function (map, geometry_type, mapId) {
         }, false);
     }
 
-    // Listen for the event.
-    // map.addEventListener('build', function (e) {
-    //     console.log('EventReceived')
-    // }, false);
-
     map.on('draw:deleted', function (e) {
         $geometry.val("");
         var event = new Event('build');
         // Dispatch the event.
-        console.log('FIRE EVENT')
         map.dispatchEvent(event);
 
     });
 
-    map.on('draw:edited', function (e) { // Why is editable layers not defined here?
+    map.on('draw:edited', function (e) {
         var layers = e.layers._layers; // layers is a dictionary of edited layers
         var layer;
-        // get layer from dictionary (layers should only have one key)
+        // get layer from dictionary
         for (var key in layers) {
             layer = layers[key];
         }
 
         var layerJSON = layer.toGeoJSON();
-
         // set polygon value
         $geometry.val(JSON.stringify(layerJSON.geometry));
 
     });
-}
+};
 
 
 /**

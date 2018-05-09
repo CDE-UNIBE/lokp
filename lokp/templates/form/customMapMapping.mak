@@ -93,76 +93,6 @@
         </div></%doc>
 </div>
 
-##----------------------------
-## Shapefile upload
-
-
-## <a id="test-shapefile-uploader-${field.title}" class="modal-trigger waves-effect waves-light btn" href="#formModal"
-##    onclick="return uploadFile(event, this);" style="margin-bottom: 15px;">${_('Upload a file')}</a>
-
-## duplicated from customFileDisplay.mak
-<script>
-    function uploadFile(event, btn) {
-        event.preventDefault();
-
-        // Set a loading indicator and show the modal window.
-        $('#formModal').modal({
-            backdrop: 'static'
-        });
-
-        // Remove old indicator and add a new one. This is used to know for
-        // which field we are currently uploading a File.
-        $('span#currentlyuploadingfile').remove();
-        var tagContainer = $(btn).parent('div');
-        tagContainer.append('<span id="currentlyuploadingfile"></span>');
-
-        // Query and set the content of the modal window.
-        $.ajax({
-            url: '${request.route_url("shp_upload_form_embedded")}'  // rout calls fileupload_embedded.mak - add new request for shp upload?
-        }).done(function (data) {
-            $('#formModal .modal-content').html(data);
-            deform.load();
-            if (!$('#formModal').hasClass('open')) {
-                // Open modal
-                $('#formModal').openModal();
-            }
-        });
-
-        // Do not submit anything.
-        return false;
-    }
-
-    /**
-     * Function to add a newly uploaded file to the list.
-     * Adds the values to the internal file information and triggers an update
-     * of the visible list with filenames.
-     */
-    function addUploadedFile(filename, identifier) {
-
-        // Get the textfield with file informations based on the indicator set.
-        var hiddenField = $('#currentlyuploadingfile')
-            .parent('div')
-            .find('input.fileinformations');
-
-        // Add and set the new values.
-        var oldValue = hiddenField.val();
-        var newValue = filename + '|' + identifier;
-        if (oldValue != '') {
-            newValue = [oldValue, newValue].join(',');
-        }
-        hiddenField.val(newValue);
-
-        console.log('hiddenField', hiddenField);
-        console.log('fileName', filename);
-
-        // Call function to do an update of the list with filenames.
-
-        //updateExistingFiles(hiddenField);
-    }
-
-</script>
-
-
 
 
 
@@ -355,7 +285,7 @@ ${field.end_mapping()}
     deform.addCallback(
             '${field.title}',
             function (oid) {
-                createFormMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
+                createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
             }
     );
 </script>

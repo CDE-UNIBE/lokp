@@ -61,7 +61,7 @@
                     ##             }
                     ##         }
 
-                            // TODO: pass geometries for compare here
+
 
     % endif
 

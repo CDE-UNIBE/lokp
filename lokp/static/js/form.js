@@ -68,7 +68,7 @@ function customAddSequenceItem(protonode, before) {
     var namematch = /(.+)?-[#]{3}/;
     var code = protonode.attr('prototype');
     var html = decodeURIComponent(code);
-    var $htmlnode = $(html);
+    var $htmlnode = $(html).not('.map-div');
     var $idnodes = $htmlnode.find('[id]');
     var $namednodes = $htmlnode.find('[name]');
     var $hrefnodes = $htmlnode.find('[data-parent]');
@@ -117,16 +117,20 @@ function customAddSequenceItem(protonode, before) {
     var containernode = $('<div class="formSingleSequence">');
     containernode.append($(anchortext));
     containernode.append($htmlnode);
+
+    // remove map container (has class map-div) from $htmlnode to avoid empty div
+    // $htmlnode.splice(10, 1);
+
     $(containernode).insertBefore(before);
 
-    $(deform.callbacks).each(function(num, item) {
-        var oid = item[0];
-        var callback = item[1];
-        var newid = idmap[oid];
-        if (newid) {
-            callback(newid);
-            }
-        });
+    // $(deform.callbacks).each(function(num, item) {
+    //     var oid = item[0];
+    //     var callback = item[1];
+    //     var newid = idmap[oid];
+    //     if (newid) {
+    //         callback(newid);
+    //         }
+    //     });
 
     deform.clearCallbacks();
     var old_len = parseInt(before.attr('now_len')||'0', 10);

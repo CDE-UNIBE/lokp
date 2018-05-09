@@ -167,8 +167,6 @@ def renderForm(request, itemType, **kwargs):
                 # again with error messages. It will be returned later.
                 html = e.render()
                 formHasErrors = True
-        ## TODO Write geometry to session
-        ## TODO Create polygon from session
         if formHasErrors is False:
             # The form is valid, store the captured data in the session.
 

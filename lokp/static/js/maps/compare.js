@@ -9,8 +9,6 @@
  *
  */
 function createReviewMap(mapId, options, geometry) {
-
-    console.log('call createFormMap function ' + mapId);
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
@@ -98,7 +96,7 @@ function createReviewMap(mapId, options, geometry) {
  ****************************************************/
 
 /**
- * @param map           Map created by createMapForm
+ * @param map           Map created by createMap
  * @param geometry      Point which is added to map
  */
 function addDealLocation(map, geometry) {

@@ -1,18 +1,23 @@
 /**
- * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId
+ * Creates a map, adds controlls to it and inserts it to a div with the same id as mapId. This function can be used to
+ * create a form map (used for geometry input) or for the map shown in the details page.
+ *
+ * mapId:   id of div container which should contain this map
+ * options: dictionary containing the following options:
+ *          pointsVisible: Boolean, points are displayed if true
+ *           pointsCluster: Boolean, points are clustered if true
+ *          geometry_type: Specifies whether this map allows drawing of 'point' or 'polygon'. Parameter required for form map.
+ *
+ *          ----Only for Details page (Readonly)----
+ *          readonly: Specifies whether this map is added to readonly (=details) page or in the form
+ *          dbLocationGeometry: point geometry with the location of this deal (from database).
+ *          dbDealAreas: list of polygons for each intended area, contract area and current area.
  */
-
-// var editableLayers = new L.FeatureGroup();
-
-function createFormMap(mapId, options) {
-
-
-    console.log('call createFormMap function ' + mapId);
+function createMap(mapId, options) {
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
-        layers: activeBaseLayer,  // Initially only add first layer
-        //drawControl: true           // enables display of draw toolbar
+        layers: activeBaseLayer  // Initially only add first layer
     });
     map.on('moveend', function (e) {
         $.cookie('_LOCATION_', map.getBounds().toBBoxString(), {expires: 7});
@@ -72,15 +77,9 @@ function createFormMap(mapId, options) {
     if (options.readonly !== true) {
         var geometry_type = options.geometry_type['geometry_type'];
         initDrawPolygonControl(map, geometry_type, mapId);
-
-
     }
     else {
-        // Readonly! Add point and polygon areas to details page
-        addDealLocationReadOnly(map, geometry); // geometry and dealAreas are defined in mapform.mak!!
-        var coordinatesLatLong = geometry.coordinates;
-        zoomToDealLocation(map, coordinatesLatLong);
-        addDealAreasReadonly(map, dealAreas);
+        initDetailsMap(map, options);
     }
 }
 
@@ -90,37 +89,29 @@ function createFormMap(mapId, options) {
  ****************************************************/
 
 /**
+ *  Creates a marker with dbLocationGeometry and adds it to the map.
  *
- * @param map           Map created by createMapForm
- * @param geometry      Polygon or Point which is added to map
+ * @param map           leaflet map to which the marker is added
+ * @param dbLocationGeometry      geometry to be added
  */
-function addDealLocationReadOnly(map, geometry) {
-
-    // get geometry field
-    var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
-
-    if ($geometry !== null) {
-        console.log('addDealLocationReadOnly');
-
-        // change coordinates to lat/long
-        var coordLatLong = geometry.coordinates.reverse();
-
-        L.marker(coordLatLong).addTo(map); // custom item can be set here
-    }
+function addDealLocationMarker(map, dbLocationGeometry) {
+    // change coordinates to lat/long
+    var coordLatLong = dbLocationGeometry.coordinates.reverse();
+    L.marker(coordLatLong).addTo(map);
 }
 
-
 /**
+ * For each polygon in dbDealAreas, a layer is added to the map in the details page. Also creates a layer control
+ * (L.control) and adds the polygons to it, allowing the polygons to be toggled manually.
+ *
  * @param map
- * @param dealAreas     Dictionary containing polygons for areas intended area, contract area current area
-
- // draw polygon when reloading page
+ * @param dbDealAreas     Dictionary containing polygons for areas intended area, contract area current area
  */
-function addDealAreasReadonly(map, dealAreas) {
+function addDealAreasToLayerControl(map, dbDealAreas) {
     // iterate over dictionary
 
     var layerDictionary = [];
-    $.each(dealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
+    $.each(dbDealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
         // convert to leaflet polygon
         var polyCoords = polygon.coordinates;
         polyCoords = polyCoords[0]; // remove unnecessary array depth
@@ -161,26 +152,43 @@ function changeToLatLon(polyCoords) {
 }
 
 
-// TODO: move to base
+/**
+ *
+ * @param layerLabel label of the layer for which a color is defined based on it name
+ * @return string specifying a color
+ */
 function getLayerColor(layerLabel) {
     var layerColor;
-    if (layerLabel == 'Intended area (ha)') {  // TODO: get string config
+    if (layerLabel === 'Intended area (ha)') {  // TODO: get string from config
         layerColor = 'lightgreen';
     }
-    if (layerLabel == 'Contract area (ha)') {
+    if (layerLabel === 'Contract area (ha)') {
         layerColor = 'green';
     }
-    if (layerLabel == 'Current area in operation (ha)') {
+    if (layerLabel === 'Current area in operation (ha)') {
         layerColor = 'blue';
     }
     return layerColor
 }
 
+function initDetailsMap(map, options) {
+    var dbLocationGeometry = options.dbLocationGeometry;
+    var dbDealAreas = options.dbDealAreas;
+    var coordinatesLatLong = dbLocationGeometry.coordinates;
+
+    addDealLocationMarker(map, dbLocationGeometry); // geometry and dealAreas are defined in mapform.mak!!
+    zoomToDealLocation(map, coordinatesLatLong);
+    addDealAreasToLayerControl(map, dbDealAreas);
+}
+
 /**
- * Parse coordinates entered in the textfield and writes it as input for the coordinates field
+ * Function is called when the 'parse' button is clicked. The entered coordinates are converted to a list of lat/long
+ * coordinates. An event is dispatched containing the coordinates, which is then handled in drawPolygonFeature.js
+ *
+ * @param mapTitle: the id of the map container for which the function is called.
  */
 function parseCoordinates(mapTitle) {
-    if (mapTitle == 'map11') {
+    if (mapTitle === 'map11') {
 
 
         var coordsField = $('#map-coords-field').val(); // read values from mak
@@ -272,15 +280,12 @@ function parseCoordinates(mapTitle) {
         }
 
         if (latlong != null) {
-            // TODO use jquery instead?
             // Create the event. This way of event handling should be compatible with IE
             var event = new CustomEvent('sendCoordinates', {detail: latlong}); // create event and add coordinates
 
-            // Define that the event name is 'build'.
+            // Define that the event name is 'sendCoordinates'.
             event.initEvent('sendCoordinates', true, true);
 
-
-            // target can be any Element or other EventTarget.
             window.dispatchEvent(event);
 
         } else {
@@ -289,6 +294,8 @@ function parseCoordinates(mapTitle) {
     }
     return false;
 }
+
+
 
 /**
  * Function to show or hide the div to parse coordinates.
