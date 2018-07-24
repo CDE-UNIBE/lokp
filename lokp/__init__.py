@@ -145,6 +145,8 @@ def main(global_config, **settings):
         'file_upload_json_response', '/files/form/json', request_method='POST')
     # Show or download a file
     config.add_route('file_view', '/files/{action}/{identifier}')
+    # Shapefile upload
+    config.add_route('shp_upload', '/files/testupload', request_method='POST')
 
     """
     Download

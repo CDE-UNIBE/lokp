@@ -53,19 +53,19 @@
            data-tooltip="${_('Map Options')}" data-activates="slide-out-map-options-${field.oid}">
             <i class="material-icons">map</i>
         </a>
-##         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
-##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.oid}">
-##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
-##         </a>
-##         % if len(activeFilters) == 1:
-##             <span class="badge"
-##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
-##                 active filter</span>
-##         % else:
-##             <span class="badge"
-##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
-##                 active filters</span>
-##         % endif
+        ##         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
+        ##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.oid}">
+        ##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
+        ##         </a>
+        ##         % if len(activeFilters) == 1:
+        ##             <span class="badge"
+        ##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
+        ##                 active filter</span>
+        ##         % else:
+        ##             <span class="badge"
+        ##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
+        ##                 active filters</span>
+        ##         % endif
     </div>
 
     ## Manages green layer button
@@ -95,6 +95,72 @@
 
 
 
+
+
+## file upload implemented accordint to https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
+% if field.title == "map11":
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>File(s) size</title>
+        <script>
+            function uploadShapefile() {
+                var shpZip = document.getElementById("uploadInput").files[0];
+                console.log('shpZip', shpZip);
+
+                // send request to server
+
+                function getBase64(file) {
+                    var reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = function () {
+                        console.log(reader.result);
+                    };
+                    reader.onerror = function (error) {
+                        console.log('Error: ', error);
+                    };
+                }
+
+                $.ajax('/files/testupload', {
+                    data: JSON.stringify({          // send uploaded file to server
+                        shpZip: getBase64(shpZip)
+                    })
+                    ,
+                    ## conversion to base64 in order to avoid 'TypeError: Illegal invocation'  -> try avoid automatic processing
+
+                    type: "POST",
+                    success: function (jsonResponse) {  // jsonResponse should contain coordinates
+                        console.log(jsonResponse)
+                    }
+                });
+                ## internal server error caused getBase64(shp_zip) --- must return a view!
+                var nBytes = 0,
+                        oFiles = document.getElementById("uploadInput").files,
+                        nFiles = oFiles.length;
+                for (var nFileId = 0; nFileId < nFiles; nFileId++) {
+                    nBytes += oFiles[nFileId].size;
+                }
+                var sOutput = nBytes + " bytes";
+                // optional code for multiples approximation
+                for (var aMultiples = ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"], nMultiple = 0, nApprox = nBytes / 1024; nApprox > 1; nApprox /= 1024, nMultiple++) {
+                    sOutput = nApprox.toFixed(3) + " " + aMultiples[nMultiple] + " (" + nBytes + " bytes)";
+                }
+                // end of optional code
+                document.getElementById("fileNum").innerHTML = nFiles;
+                document.getElementById("fileSize").innerHTML = sOutput;
+            }
+        </script>
+    </head>
+
+    <body onload="uploadShapefile()">
+    <form name="uploadForm">
+        <p><input id="uploadInput" type="file" name="myFiles" onchange="uploadShapefile()" multiple> selected files:
+            <span
+                    id="fileNum">0</span>; total size: <span id="fileSize">0</span></p>
+    </form>
+    </body>
+    </html>
+% endif
 
 
 
@@ -229,9 +295,9 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
         ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign tooltipped" data-position="top"
                                             data-delay="50"
                                             data-tooltip="${_('Use the toolbar to the right to draw the location. Please zoom in to set the geometry as accurately as possible.')}"></span>
-##         <p style="margin-top: 10px;">${_('Please use the QGIS plugin to add or edit polygons.')} <a
-##                 href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
-##                 class="text-accent-color">${_('Read more.')}</a></p>
+        ##         <p style="margin-top: 10px;">${_('Please use the QGIS plugin to add or edit polygons.')} <a
+        ##                 href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
+        ##                 class="text-accent-color">${_('Read more.')}</a></p>
     </div>
 </div>
 
@@ -243,33 +309,35 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
 
 
 ## coordinates div appears when triggerCoordinatesDiv is clicked
+
 <div id="coordinates-div" style="display: none;">
-        <div class="row">
-            <div class="col s8">
-                <label for="map-coords-field">${_('Coordinates')}</label>
-                <input id="map-coords-field" class="input-style" type="text" />
-            </div>
+    <div class="row">
+        <div class="col s8">
+            <label for="map-coords-field">${_('Coordinates')}</label>
+            <input id="map-coords-field" class="input-style" type="text"/>
         </div>
-        <div class="row">
-            <div class="input-field col s8">
-                <select id="map-coords-format">
-                    <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
-                    <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
-                    <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
-                    <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
-                    <option value="5" selected>46.95263, 7.43517</option>
-                </select>
-                <label>Select Format</label>
-            </div>
+    </div>
+    <div class="row">
+        <div class="input-field col s8">
+            <select id="map-coords-format">
+                <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
+                <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
+                <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
+                <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
+                <option value="5" selected>46.95263, 7.43517</option>
+            </select>
+            <label>Select Format</label>
         </div>
-        <div class="row">
-            <div class="col s12">
-                <button id="map-coords-button" class="btn btn-small" onClick="javascript:return parseCoordinates('${field.oid}');">${_('Parse')}</button>
-            </div>
-            <div id="map-coords-message" class="col s8">
-                <!-- Placeholder -->
-            </div>
+    </div>
+    <div class="row">
+        <div class="col s12">
+            <button id="map-coords-button" class="btn btn-small"
+                    onClick="javascript:return parseCoordinates('${field.oid}');">${_('Parse')}</button>
         </div>
+        <div id="map-coords-message" class="col s8">
+            <!-- Placeholder -->
+        </div>
+    </div>
 </div>
 
 
@@ -284,7 +352,7 @@ ${field.end_mapping()}
 <script>
     deform.addCallback(
             ['${field.oid}', '${field.title}'],
-            function(args) {
+            function (args) {
 
                 var oid = args[0];
                 var title = args[1];
