@@ -66,6 +66,10 @@ class ShapefileProtocol:
         return self.geojson
 
     def return_error(self):
+        """
+        An error occured. Return with appropriate status code and error message.
+        """
+        self.remove_temp_dir()
         self.request.response.status = 400
         return {'error': self.error}
 
@@ -73,8 +77,10 @@ class ShapefileProtocol:
         """
         Read the shapefile and extract its geometries.
         """
-        reader = shapefile.Reader(
-            os.path.join(self.temp_folder, self.temp_name))
+        # When extracting zip files, we need to find out the name of the
+        # shapefile
+        shapefile_path = self.find_shp_in_directory(self.temp_folder)
+        reader = shapefile.Reader(shapefile_path)
 
         if reader.shapeType not in self.valid_shapes:
             self.error = 'Invalid geometry.'
@@ -93,14 +99,6 @@ class ShapefileProtocol:
 
         self.geojson = geojson.dumps(geometries[0])
 
-    def extract_zip(self):
-        # zip_file = ''
-        # target_dir = ''
-        # with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        #     zip_ref.extractall(target_dir)
-        self.error = 'TODO ...'
-        return
-
     def validate_shp_parts(self):
         """
         Check that all files of a valid shapefile are available.
@@ -114,6 +112,17 @@ class ShapefileProtocol:
             self.error = 'Missing required parts of shapefile: %s' % ', '.join(
                 missing_parts)
             return
+
+    def extract_zip(self):
+        """
+        Extract an uploaded zipfile to the temporary location.
+        """
+        file_ending = self.get_file_ending(self.file_fields[0].filename)
+        file_path = os.path.join(
+            self.temp_folder, f'{self.temp_name}{file_ending}')
+
+        with zipfile.ZipFile(file_path, 'r') as zip_ref:
+            zip_ref.extractall(self.temp_folder)
 
     def save_files(self):
         """
@@ -163,9 +172,20 @@ class ShapefileProtocol:
         self.file_fields = file_fields
 
     def remove_temp_dir(self):
-        pass
+        if os.path.exists(self.temp_folder):
+            shutil.rmtree(self.temp_folder)
 
     @staticmethod
     def get_file_ending(filename) -> str:
         """Return the ending (e.g. ".shp") of a filename."""
         return os.path.splitext(filename)[1]
+
+    @staticmethod
+    def find_shp_in_directory(dir_path: str) -> str:
+        """
+        Return the path of the shapefile (*.shp) in a directory.
+        ATTENTION: This returns only the first occurrence found!
+        """
+        shapefiles = glob.glob(os.path.join(dir_path, '*.shp'))
+        if len(shapefiles) > 0:
+            return shapefiles[0]
