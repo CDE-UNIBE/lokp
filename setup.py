@@ -23,6 +23,7 @@ requires = [
     'pyramid_mailer==0.15.1',
     'pyramid_mako==1.0.2',
     'pyramid_tm==2.2',
+    'PyShp==1.2.12',
     'pyyaml==3.12',
     'shapely==1.6.3',
     'sqlalchemy==1.2.1',

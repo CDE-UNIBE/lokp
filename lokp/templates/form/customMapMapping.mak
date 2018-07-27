@@ -21,6 +21,10 @@
     from mako.template import Template
     from mako.lookup import TemplateLookup
 
+    allow_shapefile_upload = geometry_type['geometry_type'] == 'polygon'
+
+    # This is a temporary solution: Allow multiple features for polygons, not for points.
+    draw_multiple_features = 'true' if allow_shapefile_upload else 'false'
 %>
 
 
@@ -93,76 +97,15 @@
         </div></%doc>
 </div>
 
-
-
-
-
-## file upload implemented accordint to https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
-% if field.title == "map11":
-    <html>
-    <head>
-        <meta charset="UTF-8">
-        <title>File(s) size</title>
-        <script>
-            function uploadShapefile() {
-                var shpZip = document.getElementById("uploadInput").files[0];
-                console.log('shpZip', shpZip);
-
-                // send request to server
-
-                function getBase64(file) {
-                    var reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = function () {
-                        console.log(reader.result);
-                    };
-                    reader.onerror = function (error) {
-                        console.log('Error: ', error);
-                    };
-                }
-
-                $.ajax('/files/testupload', {
-                    data: JSON.stringify({          // send uploaded file to server
-                        shpZip: getBase64(shpZip)
-                    })
-                    ,
-                    ## conversion to base64 in order to avoid 'TypeError: Illegal invocation'  -> try avoid automatic processing
-
-                    type: "POST",
-                    success: function (jsonResponse) {  // jsonResponse should contain coordinates
-                        console.log(jsonResponse)
-                    }
-                });
-                ## internal server error caused getBase64(shp_zip) --- must return a view!
-                var nBytes = 0,
-                        oFiles = document.getElementById("uploadInput").files,
-                        nFiles = oFiles.length;
-                for (var nFileId = 0; nFileId < nFiles; nFileId++) {
-                    nBytes += oFiles[nFileId].size;
-                }
-                var sOutput = nBytes + " bytes";
-                // optional code for multiples approximation
-                for (var aMultiples = ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"], nMultiple = 0, nApprox = nBytes / 1024; nApprox > 1; nApprox /= 1024, nMultiple++) {
-                    sOutput = nApprox.toFixed(3) + " " + aMultiples[nMultiple] + " (" + nBytes + " bytes)";
-                }
-                // end of optional code
-                document.getElementById("fileNum").innerHTML = nFiles;
-                document.getElementById("fileSize").innerHTML = sOutput;
-            }
-        </script>
-    </head>
-
-    <body onload="uploadShapefile()">
-    <form name="uploadForm">
-        <p><input id="uploadInput" type="file" name="myFiles" onchange="uploadShapefile()" multiple> selected files:
-            <span
-                    id="fileNum">0</span>; total size: <span id="fileSize">0</span></p>
-    </form>
-    </body>
-    </html>
-% endif
-
-
+% if allow_shapefile_upload:
+  <form action="/files/testupload" class="dropzone" id="dropzone-${field.oid}">
+    <div class="fallback">
+      <input name="file" type="file" multiple />
+    </div>
+  </form>
+  <input type="button" value="Remove all" onclick="Dropzone.forElement('#dropzone-${field.oid}').removeAllFiles(true);">
+  <input type="button" value="Upload" onclick="Dropzone.forElement('#dropzone-${field.oid}').processQueue();">
+% endif:
 
 ## Map Menu
 
@@ -357,18 +300,49 @@ ${field.end_mapping()}
                 var oid = args[0];
                 var title = args[1];
 
-                console.log("foo", oid, title);
-
                 if (window['loaded_maps'] === undefined) {
                     window['loaded_maps'] = [];
                 }
 
                 if (window['loaded_maps'].indexOf(title) === -1) {
-                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
+                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}, draw_multiple_features: ${draw_multiple_features}});
                     window['loaded_maps'].push(title);
                 } else {
                     $('#' + oid).hide();
                 }
             }
     );
+    
+    % if allow_shapefile_upload:
+       $('#dropzone-${field.oid}').dropzone({
+         uploadMultiple: true,
+         autoProcessQueue: false,
+         addRemoveLinks: true,
+         parallelUploads: 10,
+         init: function() {
+             this.on('successmultiple', function(files, response) {
+                 var mapOptions = getMapOptionsById('${field.oid}');
+                 
+                 // Get the new drawn features based on the response.
+                 var newDrawnFeatures = getDrawnFeatures(response);
+
+                 // Remove all existing drawn features.
+                 mapOptions.drawnFeatures.eachLayer(function(layer) {
+                     mapOptions.drawnFeatures.removeLayer(layer);
+                 });
+
+                 // Add the new drawn features.
+                 newDrawnFeatures.eachLayer(function(layer) {
+                     mapOptions.drawnFeatures.addLayer(layer);
+                 });
+
+                 // Update the geometry field.
+                 updateGeometryField(mapOptions.map, newDrawnFeatures);
+
+                 // Reset the upload field
+                 this.removeAllFiles();
+             });
+         }
+       });
+    % endif
 </script>

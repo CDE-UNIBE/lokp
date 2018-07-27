@@ -312,7 +312,6 @@ function initMapContent(map) {
                         'features': dataGrouped[key]
                     };
                     var geojsonLayer;
-                    console.log(pointsCluster);
                     if (pointsCluster === true) {
                         // Define a cluster of markers for each map criteria value
 
@@ -394,8 +393,6 @@ function initMapContent(map) {
             }
 
             var mapOptions = getMapOptionsFromMap(map);
-            console.log(mapOptions.options.pointsVisible);
-            console.log(mapOptions);
             if (mapOptions.options.pointsVisible === true) {
                 map.addLayer(dealLayer);
             }
@@ -586,4 +583,3 @@ function zoomToDealLocation(map, coordLatLong) {
     var long = coordLatLong[1];
     map.setView([lat, long], 8);
 }
-

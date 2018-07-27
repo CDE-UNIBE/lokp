@@ -7,5 +7,3 @@
        value="${escape(cstruct)}"
        id="${field.oid}"
 />
-
-## ${cstruct}

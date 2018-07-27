@@ -54,7 +54,7 @@ function createMap(mapId, options) {
     if (typeof window.lokp_maps === 'undefined') {
         window.lokp_maps = {};
     }
-    window.lokp_maps[mapId] = {
+    var mapOptions = {
         map: map,
         baseLayers: baseLayers,
         contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
@@ -67,6 +67,7 @@ function createMap(mapId, options) {
         mapVariables: window.mapVariables,
         options: options
     };
+    window.lokp_maps[mapId] = mapOptions;
 
     initBaseLayerControl();
     initMapContent(map);
@@ -75,8 +76,7 @@ function createMap(mapId, options) {
     initMapSearch(mapId);
 
     if (options.readonly !== true) {
-        var geometry_type = options.geometry_type['geometry_type'];
-        initDrawPolygonControl(map, geometry_type, mapId);
+        initDrawControl(mapOptions);
     }
     else {
         initDetailsMap(map, options);
@@ -112,16 +112,25 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
 
     var layerDictionary = [];
     $.each(dbDealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
-        // convert to leaflet polygon
-        var polyCoords = polygon.coordinates;
-        polyCoords = polyCoords[0]; // remove unnecessary array depth
+        var coords = polygon.coordinates;
+        var coordsTransformed;
+        if (polygon.type === 'Polygon') {
+            coordsTransformed = coords.map(function(c) {
+                return L.GeoJSON.coordsToLatLngs(c);
+            });
+        } else if (polygon.type === 'MultiPolygon') {
+            coordsTransformed = coords.map(function(c2) {
+                return c2.map(function(c1) {
+                    return L.GeoJSON.coordsToLatLngs(c1);
+                })
+            });
+        }
+        var polygonL = L.polygon(
+            coordsTransformed,
+            {
+                color: getLayerColor(key)
+            });
 
-        // change each long lat coordinate within polyCoords to lat long
-        var polyCoordsLatLon = changeToLatLon(polyCoords);
-
-        var layerColor = getLayerColor(key);
-
-        var polygonL = L.polygon(polyCoordsLatLon, {color: layerColor});
         map.addLayer(polygonL); // polygons are initially added to the map
         layerDictionary[key] = polygonL;
 

@@ -2303,13 +2303,15 @@ def getMapWidget(thematicgroup, geometry_type):
         'lokp:static/lib/chroma/chroma.min.js',
         'lokp:static/js/maps2/base.js',
         'lokp:static/js/maps/form.js',
-        'lokp:static/js/maps/drawPolygonFeature.js'
+        'lokp:static/js/maps/drawPolygonFeature.js',
+        'lokp:static/lib/dropzone/dropzone.min.js',
     )
     deform.widget.default_resource_registry.set_css_resources(
         'mapwidget', None,
         'lokp:static/css/leaflet.css',
-        'lokp:static/css/leaflet.draw.css')
-
+        'lokp:static/css/leaflet.draw.css',
+        'lokp:static/lib/dropzone/dropzone.min.css',
+    )
     return mapWidget
 
 

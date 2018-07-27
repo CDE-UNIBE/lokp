@@ -186,7 +186,7 @@ def file_upload_renderer(tmpl_name, **kw):
 
     return template.render(**kw)
 
-# TODO: pass boolean parameter for file upload
+
 def handle_upload(request, filedict):
     """
     Handle the upload of a new file.
