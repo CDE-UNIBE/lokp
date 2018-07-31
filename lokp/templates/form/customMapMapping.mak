@@ -98,7 +98,7 @@
 </div>
 
 % if allow_shapefile_upload:
-  <form action="/files/testupload" class="dropzone" id="dropzone-${field.oid}">
+  <form action="${request.route_url('shp_upload')}" class="dropzone" id="dropzone-${field.oid}">
     <div class="fallback">
       <input name="file" type="file" multiple />
     </div>
