@@ -150,15 +150,17 @@ function getDrawControlOptions(geomType, drawnFeatures) {
     };
     if (geomType === 'point') {
         // Point
+        var CustomMarker = L.Icon.extend({
+            options: {
+                shadowUrl: null,
+                iconSize: new L.Point(24, 40),
+                iconUrl: '/static/css/images/marker-icon-2x.png'
+            }
+        });
+
         drawOptions['draw'] = {
             marker: {
-                icon: L.Icon.extend({
-                    options: {
-                        shadowUrl: null,
-                        iconSize: new L.Point(24, 40),
-                        iconUrl: '/static/css/images/marker-icon-2x.png'
-                    }
-                })
+                icon: new CustomMarker()
             },
             circle: false,
             rectangle: false,
