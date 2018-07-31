@@ -213,13 +213,31 @@ class ActivityProtocol(Protocol):
                 # Remove tags with empty geometry. Prevents errors when saving
                 # taggroups having a main tag (e.g. intended area) but no
                 # polygon was drawn.
-                taggroup['tags'] = [
-                    t for t in taggroup.get('tags', [])
-                    if t.get('value') != {'geometry': colander.null}]
+                # But, do not remove tag with empty geometry if in the same
+                # taggroup, a tag with geometry is to be removed. This means
+                # that the geometry was deleted (1x "delete", 1x "add" with
+                # empty geometry). In this case, leave the added empty geometry
+                # so the geometry will be removed in the db.
+                has_geometry_deleted = False
+                for t in taggroup.get('tags', []):
+                    t_has_geometry = isinstance(t['value'], dict) and \
+                                      'geometry' in t['value']
+                    if t_has_geometry and t['op'] == 'delete':
+                        has_geometry_deleted = True
+
+                tags = []
+                for t in taggroup.get('tags', []):
+                    v = t.get('value')
+                    if v != {'geometry': colander.null}:
+                        tags.append(t)
+                    elif has_geometry_deleted:
+                        t['value'] = {'geometry': None}
+                        tags.append(t)
+                taggroup['tags'] = tags
 
                 cleaned_activity['taggroups'].append(taggroup)
 
-            log.debug('The diff to create/update the activity after removing empty geometry taggroups: %s' % diff)
+            log.debug('The diff to create/update the activity after removing empty geometry taggroups: %s' % cleaned_activity)
 
             a, ret_diff = self._handle_activity(request, cleaned_activity, changeset)
 

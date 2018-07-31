@@ -234,7 +234,7 @@ def formdataToDiff(request, newform, itemType):
             protocol = ActivityProtocol(DBSession)
 
         item = protocol.read_one_by_version(
-            request, identifier, version, translate=False
+            request, identifier, version, translate=False, geometry='full'
         )
         olditemjson = item.to_table(request)
 
