@@ -68,7 +68,10 @@ function customAddSequenceItem(protonode, before) {
     var namematch = /(.+)?-[#]{3}/;
     var code = protonode.attr('prototype');
     var html = decodeURIComponent(code);
-    var $htmlnode = $(html).not('.map-div');
+    var $htmlnode = $(html).not('.map-div')
+        .not('.map-side-menu')
+        .not('.map-modal')
+        .not('.map-actions');
     var $idnodes = $htmlnode.find('[id]');
     var $namednodes = $htmlnode.find('[name]');
     var $hrefnodes = $htmlnode.find('[data-parent]');

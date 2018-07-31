@@ -174,144 +174,121 @@ function initDetailsMap(map, options) {
  * Function is called when the 'parse' button is clicked. The entered coordinates are converted to a list of lat/long
  * coordinates. An event is dispatched containing the coordinates, which is then handled in drawPolygonFeature.js
  *
- * @param mapTitle: the id of the map container for which the function is called.
+ * @param mapId: the id of the map container for which the function is called.
  */
-function parseCoordinates(mapTitle) {
-    if (mapTitle === 'map11') {
+function parseCoordinates(mapId) {
+    var coordsField = $('#map-coords-field-' + mapId).val(); // read values from mak
+    var coordsFormat = $('#map-coords-format-' + mapId).val();
 
+    // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
 
-        var coordsField = $('#map-coords-field').val(); // read values from mak
-        var coordsFormat = $('#map-coords-format').val();
+    // It seems to be necessary to escape the values. Otherwise, the degree
+    // symbol (°) is not recognized.
+    var str = escape(coordsField);
+    // However, we do need to replace the spaces again do prevent regex error.
+    str = str.replace(/%20/g, ' ');
 
-        // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
+    var pattern, matches;
+    var latsign, longsign, d1, m1, s1, d2, m2, s2;
+    var latitude, longitude, latlong;
 
-        // It seems to be necessary to escape the values. Otherwise, the degree
-        // symbol (°) is not recognized.
-        var str = escape(coordsField);
-        // However, we do need to replace the spaces again do prevent regex error.
-        str = str.replace(/%20/g, ' ');
-
-        var pattern, matches;
-        var latsign, longsign, d1, m1, s1, d2, m2, s2;
-        var latitude, longitude, latlong;
-
-        if (coordsFormat == 1) {
-            // 46° 57.1578 N 7° 26.1102 E
-            pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[3] === 'S') ? -1 : 1;
-                longsign = (matches[6] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[1]);
-                m1 = parseFloat(matches[2]);
-                d2 = parseFloat(matches[4]);
-                m2 = parseFloat(matches[5]);
-                latitude = latsign * (d1 + (m1 / 60.0));
-                longitude = longsign * (d2 + (m2 / 60.0));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 2) {
-            // 46° 57' 9.468" N 7° 26' 6.612" E
-            pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[4] === 'S') ? -1 : 1;
-                longsign = (matches[8] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[1]);
-                m1 = parseFloat(matches[2]);
-                s1 = parseFloat(matches[3]);
-                d2 = parseFloat(matches[5]);
-                m2 = parseFloat(matches[6]);
-                s2 = parseFloat(matches[7]);
-                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
-                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 3) {
-            // N 46° 57.1578 E 7° 26.1102
-            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[1] === 'S') ? -1 : 1;
-                longsign = (matches[4] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[2]);
-                m1 = parseFloat(matches[3]);
-                d2 = parseFloat(matches[5]);
-                m2 = parseFloat(matches[6]);
-                latitude = latsign * (d1 + (m1 / 60.0));
-                longitude = longsign * (d2 + (m2 / 60.0));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 4) {
-            // N 46° 57' 9.468" E 7° 26' 6.612"
-            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[1] === 'S') ? -1 : 1;
-                longsign = (matches[5] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[2]);
-                m1 = parseFloat(matches[3]);
-                s1 = parseFloat(matches[4]);
-                d2 = parseFloat(matches[6]);
-                m2 = parseFloat(matches[7]);
-                s2 = parseFloat(matches[8]);
-                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
-                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 5) {
-            // 46.95263, 7.43517
-            pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latlong = [matches[1], matches[2]];
-            }
+    if (coordsFormat === '1') {
+        // 46° 57.1578 N 7° 26.1102 E
+        pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[3] === 'S') ? -1 : 1;
+            longsign = (matches[6] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[1]);
+            m1 = parseFloat(matches[2]);
+            d2 = parseFloat(matches[4]);
+            m2 = parseFloat(matches[5]);
+            latitude = latsign * (d1 + (m1 / 60.0));
+            longitude = longsign * (d2 + (m2 / 60.0));
+            latlong = [latitude, longitude];
         }
-
-        if (latlong != null) {
-            // Create the event. This way of event handling should be compatible with IE
-            var event = new CustomEvent('sendCoordinates', {detail: latlong}); // create event and add coordinates
-
-            // Define that the event name is 'sendCoordinates'.
-            event.initEvent('sendCoordinates', true, true);
-
-            window.dispatchEvent(event);
-
-        } else {
-            showParseFeedback(tForInvalidFormat, 'error');
+    } else if (coordsFormat === '2') {
+        // 46° 57' 9.468" N 7° 26' 6.612" E
+        pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[4] === 'S') ? -1 : 1;
+            longsign = (matches[8] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[1]);
+            m1 = parseFloat(matches[2]);
+            s1 = parseFloat(matches[3]);
+            d2 = parseFloat(matches[5]);
+            m2 = parseFloat(matches[6]);
+            s2 = parseFloat(matches[7]);
+            latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+            longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+            latlong = [latitude, longitude];
         }
+    } else if (coordsFormat === '3') {
+        // N 46° 57.1578 E 7° 26.1102
+        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[1] === 'S') ? -1 : 1;
+            longsign = (matches[4] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[2]);
+            m1 = parseFloat(matches[3]);
+            d2 = parseFloat(matches[5]);
+            m2 = parseFloat(matches[6]);
+            latitude = latsign * (d1 + (m1 / 60.0));
+            longitude = longsign * (d2 + (m2 / 60.0));
+            latlong = [latitude, longitude];
+        }
+    } else if (coordsFormat === '4') {
+        // N 46° 57' 9.468" E 7° 26' 6.612"
+        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[1] === 'S') ? -1 : 1;
+            longsign = (matches[5] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[2]);
+            m1 = parseFloat(matches[3]);
+            s1 = parseFloat(matches[4]);
+            d2 = parseFloat(matches[6]);
+            m2 = parseFloat(matches[7]);
+            s2 = parseFloat(matches[8]);
+            latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+            longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+            latlong = [latitude, longitude];
+        }
+    } else if (coordsFormat === '5') {
+        // 46.95263, 7.43517
+        pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latlong = [matches[1], matches[2]];
+        }
+    }
+
+    if (latlong != null) {
+        var mapOptions = getMapOptionsById(mapId);
+        zoomAddSearchMarker(mapOptions, L.latLng(latlong), true);
+        showParseFeedback(mapId, 'Coordinates successfully parsed.', 'success');
+    } else {
+        showParseFeedback(mapId, tForInvalidFormat, 'error');
     }
     return false;
 }
 
 
-
-/**
- * Function to show or hide the div to parse coordinates.
- */
-function triggerCoordinatesDiv() {
-    var coordinatesDiv = $('#coordinates-div');
-    if (coordinatesDiv.is(':hidden')) {
-        coordinatesDiv.show();
-    } else {
-        coordinatesDiv.hide();
-    }
-}
-
 /**
  * Show a feedback after parsing the entered coordinates.
+ * @param {string} mapId
  * @param {String} msg
  * @param {String} textStyle
  */
-function showParseFeedback(msg, textStyle) {
-    var msgField = $('#map-coords-message');
-
-    msgField.html([
-        '<span class="text-',
-        textStyle,
-        '"></br>',
-        msg,
-        '</span>'
-    ].join(''));
+function showParseFeedback(mapId, msg, textStyle) {
+    var messageContainer = $('#map-actions-feedback-' + mapId);
+    messageContainer.removeClass(function(index, className) {
+        return (className.match (/(^|\s)alert-\S+/g) || []).join(' ');
+    });
+    messageContainer.addClass('alert-' + textStyle);
+    messageContainer.find('.js-error-message').html(msg);
+    messageContainer.show();
 }
 

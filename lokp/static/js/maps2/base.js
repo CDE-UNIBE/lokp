@@ -199,24 +199,45 @@ function initMapSearch(mapId) {
 
         // Zoom to location
         var latLng = L.latLng(loc.lat, loc.lng);
-        map.setView(latLng, 14);
-
-        // Set marker if wanted.
-        if (searchField.data('set-marker')) {
-            if (mapOptions.activeMapMarker !== null) {
-                map.removeLayer(mapOptions.activeMapMarker);
-            }
-            var marker = L.marker(latLng);
-            marker.addTo(map);
-            mapOptions.activeMapMarker = marker;
-            // Remove marker on click.
-            marker.on('click', function() {
-                map.removeLayer(this);
-                mapOptions.activeMapMarker = null;
-            });
-        }
+        zoomAddSearchMarker(mapOptions, latLng, searchField.data('set-marker'));
     });
 }
+
+/**
+ * Zoom to a certain location after a search (or coordinate parsing). Optionally
+ * also set a marker.
+ * @param mapOptions
+ * @param latLng
+ * @param {boolean} setMarker
+ */
+function zoomAddSearchMarker(mapOptions, latLng, setMarker) {
+    var map = mapOptions.map;
+    map.setView(latLng, 14);
+
+    // Set marker if wanted.
+    if (setMarker) {
+        if (mapOptions.activeMapMarker !== null) {
+            map.removeLayer(mapOptions.activeMapMarker);
+        }
+        var altIconColor = 'red';
+        var iconColor = 'white';
+        var marker = L.marker(latLng, {
+            icon: L.divIcon({
+                html: '<div style="background-color: ' + altIconColor + '"><div style="background-color: ' + iconColor + '"></div></div>',
+                iconSize: L.point(40, 40),
+                className: 'map-single-icon'
+            })
+        });
+        marker.addTo(map);
+        mapOptions.activeMapMarker = marker;
+        // Remove marker on click.
+        marker.on('click', function() {
+            map.removeLayer(this);
+            mapOptions.activeMapMarker = null;
+        });
+    }
+}
+
 
 
 /**

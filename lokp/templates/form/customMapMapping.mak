@@ -97,16 +97,6 @@
         </div></%doc>
 </div>
 
-% if allow_shapefile_upload:
-  <form action="${request.route_url('shp_upload')}" class="dropzone" id="dropzone-${field.oid}">
-    <div class="fallback">
-      <input name="file" type="file" multiple />
-    </div>
-  </form>
-  <input type="button" value="Remove all" onclick="Dropzone.forElement('#dropzone-${field.oid}').removeAllFiles(true);">
-  <input type="button" value="Upload" onclick="Dropzone.forElement('#dropzone-${field.oid}').processQueue();">
-% endif:
-
 ## Map Menu
 
 <div id="slide-out-map-options-${field.oid}" class="side-nav map-side-menu">
@@ -194,7 +184,7 @@
 
 ## Map modal (used for legend of context layers)
 
-<div id="map-modal-${field.oid}" class="modal">
+<div id="map-modal-${field.oid}" class="modal map-modal">
     <div id="map-modal-body-${field.oid}" class="modal-content">
         ## Placeholder for map modal
   </div>
@@ -230,59 +220,83 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
     </li>
 % endif
 
-<div class="row" style="margin-top: 10px;">
-    <div class="col s12">
-        % if field.required:
-            <span class="required-form-field"></span>
-        % endif
-        ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign tooltipped" data-position="top"
-                                            data-delay="50"
-                                            data-tooltip="${_('Use the toolbar to the right to draw the location. Please zoom in to set the geometry as accurately as possible.')}"></span>
-        ##         <p style="margin-top: 10px;">${_('Please use the QGIS plugin to add or edit polygons.')} <a
-        ##                 href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
-        ##                 class="text-accent-color">${_('Read more.')}</a></p>
+<div class="row map-actions">
+  <div class="col s12">
+    <ul class="tabs tabs-fixed-width z-depth-1">
+      <li class="tab"><a href="#tab-${field.oid}-1">${_('Instructions')}</a></li>
+      <li class="tab"><a href="#tab-${field.oid}-2">${_('Parse coordinates')}</a></li>
+      <li class="tab${' disabled' if not allow_shapefile_upload else ''}"><a href="#tab-${field.oid}-3">${_('Upload shapefile')}</a></li>
+    </ul>
+  </div>
+  <div id="tab-${field.oid}-1" class="col s12">
+    <div class="tab-content-bordered">
+      % if geometry_type['geometry_type'] == 'point':
+        <p>${_('Set the location of the deal.')}</p>
+      % else:
+        <p>${_('Set the corresponding area.')}</p>
+      % endif
+      <p>${_('Use the toolbar to the right to draw the location. Please zoom in to set the geometry as accurately as possible.')}</p>
     </div>
+  </div>
+  <div id="tab-${field.oid}-2" class="col s12">
+    <div class="tab-content-bordered">
+      <div class="row">
+        <div class="col s8">
+          <label for="map-coords-field-${field.oid}">${_('Coordinates')}</label>
+          <input id="map-coords-field-${field.oid}" class="input-style" type="text"/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s8">
+          <select id="map-coords-format-${field.oid}">
+            <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
+            <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
+            <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
+            <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
+            <option value="5" selected>46.95263, 7.43517</option>
+          </select>
+          <label>Select Format</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <button id="map-coords-button" class="btn btn-small"
+                  onClick="javascript:parseCoordinates('${field.oid}'); return false;">${_('Parse')}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-${field.oid}-3" class="col s12">
+    <div class="tab-content-bordered">
+      % if allow_shapefile_upload:
+        <div class="row map-shapefile-dropzone">
+          <div class="col s12">
+            <p>You can upload the necessary parts of a Shapfile (.shp, .dbf, .shx) either as separate files or as a .zip file. The files will be deleted from the server directly after the upload.</p>
+            <p>Caution: Uploading a Shapefile will remove all previous geometries from the map!</p>
+            <form action="${request.route_url('shp_upload')}" class="dropzone" id="dropzone-${field.oid}">
+              <div class="fallback">
+                <input name="file" type="file" multiple />
+              </div>
+            </form>
+            <button class="btn btn-small btn-primary" onclick="Dropzone.forElement('#dropzone-${field.oid}').processQueue(); return false;">Upload</button>
+            <button class="btn btn-small btn-warning right" onclick="Dropzone.forElement('#dropzone-${field.oid}').removeAllFiles(true); return false;">Remove all</button>
+          </div>
+        </div>
+      % endif
+    </div>
+  </div>
+  <div class="col s12 map-actions-feedback">
+    <div class="alert alert-success closable-alert" id="map-actions-feedback-${field.oid}" style="display: none;">
+      <div class="js-error-message"><!-- Placeholder --></div>
+      <i class="material-icons alert-close-icon js-alert-hide">close</i>
+    </div>
+  </div>
 </div>
 
 <script type="text/javascript">
     var tForSuccess = "${_('Success!')}";
     var tForInvalidFormat = "${_('Not in a valid format!')}";
 </script>
-
-
-
-## coordinates div appears when triggerCoordinatesDiv is clicked
-
-<div id="coordinates-div" style="display: none;">
-    <div class="row">
-        <div class="col s8">
-            <label for="map-coords-field">${_('Coordinates')}</label>
-            <input id="map-coords-field" class="input-style" type="text"/>
-        </div>
-    </div>
-    <div class="row">
-        <div class="input-field col s8">
-            <select id="map-coords-format">
-                <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
-                <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
-                <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
-                <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
-                <option value="5" selected>46.95263, 7.43517</option>
-            </select>
-            <label>Select Format</label>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col s12">
-            <button id="map-coords-button" class="btn btn-small"
-                    onClick="javascript:return parseCoordinates('${field.oid}');">${_('Parse')}</button>
-        </div>
-        <div id="map-coords-message" class="col s8">
-            <!-- Placeholder -->
-        </div>
-    </div>
-</div>
-
 
 ${field.start_mapping()}
 
@@ -342,7 +356,12 @@ ${field.end_mapping()}
 
                  // Reset the upload field
                  this.removeAllFiles();
-             });
+
+                 showParseFeedback('${field.oid}', 'Shapefile successfully uploaded.', 'success');
+             })
+                 .on('error', function(file, response) {
+                     showParseFeedback('${field.oid}', response.error, 'error');
+                 });
          }
        });
     % endif
