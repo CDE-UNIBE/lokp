@@ -577,9 +577,3 @@ function getColors(index) {
     // Do not break if index > length
     return colors[index % colors.length];
 }
-
-function zoomToDealLocation(map, coordLatLong) {
-    var lat = coordLatLong[0];
-    var long = coordLatLong[1];
-    map.setView([lat, long], 8);
-}

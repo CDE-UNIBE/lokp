@@ -331,10 +331,11 @@ ${field.end_mapping()}
                      mapOptions.drawnFeatures.removeLayer(layer);
                  });
 
-                 // Add the new drawn features.
+                 // Add the new drawn features and zoom to them.
                  newDrawnFeatures.eachLayer(function(layer) {
                      mapOptions.drawnFeatures.addLayer(layer);
                  });
+                 mapOptions.map.fitBounds(newDrawnFeatures.getBounds());
 
                  // Update the geometry field.
                  updateGeometryField(mapOptions.map, newDrawnFeatures);

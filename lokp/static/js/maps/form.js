@@ -89,15 +89,14 @@ function createMap(mapId, options) {
  ****************************************************/
 
 /**
- *  Creates a marker with dbLocationGeometry and adds it to the map.
- *
- * @param map           leaflet map to which the marker is added
- * @param dbLocationGeometry      geometry to be added
+ * Create a marker on the map and zoom to its location.
+ * @param {L.map} map: The current map.
+ * @param {array} geojsonCoords: Point coordinates in geojson format as array.
  */
-function addDealLocationMarker(map, dbLocationGeometry) {
-    // change coordinates to lat/long
-    var coordLatLong = dbLocationGeometry.coordinates.reverse();
-    L.marker(coordLatLong).addTo(map);
+function addPointMarker(map, geojsonCoords) {
+    var latLng = L.GeoJSON.coordsToLatLng(geojsonCoords);
+    L.marker(latLng).addTo(map);
+    map.setView(latLng, 8);
 }
 
 /**
@@ -145,21 +144,6 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
     }
 }
 
-/**
- *
- * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
- * @returns {Array} An array containing arrays with a lat/long coordinate pair
- */
-function changeToLatLon(polyCoords) {
-    var polyCoordsLatLon = [];
-    for (var i = 0; i < polyCoords.length; i++) {
-        var coordLongLat = polyCoords[i];
-        var coordLatLong = coordLongLat.reverse();
-        polyCoordsLatLon.push(coordLatLong);
-    }
-    return polyCoordsLatLon;
-}
-
 
 /**
  *
@@ -181,12 +165,8 @@ function getLayerColor(layerLabel) {
 }
 
 function initDetailsMap(map, options) {
-    var dbLocationGeometry = options.dbLocationGeometry;
     var dbDealAreas = options.dbDealAreas;
-    var coordinatesLatLong = dbLocationGeometry.coordinates;
-
-    addDealLocationMarker(map, dbLocationGeometry); // geometry and dealAreas are defined in mapform.mak!!
-    zoomToDealLocation(map, coordinatesLatLong);
+    addPointMarker(map, options.dbLocationGeometry.coordinates);
     addDealAreasToLayerControl(map, dbDealAreas);
 }
 

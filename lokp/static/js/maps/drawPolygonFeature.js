@@ -13,6 +13,16 @@ function initDrawControl(mapOptions) {
     mapOptions['drawnFeatures'] = drawnFeatures;
     map.addLayer(drawnFeatures);
 
+    // Zoom to layer.
+    var bounds = drawnFeatures.getBounds();
+    if (bounds.isValid()) {
+        if (geometryType === 'point') {
+            map.setView(bounds.getCenter(), 8)
+        } else {
+            map.fitBounds(bounds);
+        }
+    }
+
     // Initialize the draw control and add it to the map.
     var drawOptions = getDrawControlOptions(geometryType, drawnFeatures);
     var drawControl = new L.Control.Draw(drawOptions);
