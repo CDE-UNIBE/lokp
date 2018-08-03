@@ -241,6 +241,10 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
   <div id="tab-${field.oid}-2" class="col s12">
     <div class="tab-content-bordered">
       <div class="row">
+        <div class="col s12">
+          <p>You can enter coordinates to zoom to a certain location. Please note that you will still have to set a point or draw a polygon manually.</p>
+          <br>
+        </div>
         <div class="col s8">
           <label for="map-coords-field-${field.oid}">${_('Coordinates')}</label>
           <input id="map-coords-field-${field.oid}" class="input-style" type="text"/>
@@ -319,7 +323,7 @@ ${field.end_mapping()}
                 }
 
                 if (window['loaded_maps'].indexOf(title) === -1) {
-                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}, draw_multiple_features: ${draw_multiple_features}});
+                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}, draw_multiple_features: ${draw_multiple_features}, label: '${label}'});
                     window['loaded_maps'].push(title);
                 } else {
                     $('#' + oid).hide();
@@ -338,7 +342,7 @@ ${field.end_mapping()}
                  var mapOptions = getMapOptionsById('${field.oid}');
                  
                  // Get the new drawn features based on the response.
-                 var newDrawnFeatures = getDrawnFeatures(response);
+                 var newDrawnFeatures = getDrawnFeatures(response, mapOptions.options.label);
 
                  // Remove all existing drawn features.
                  mapOptions.drawnFeatures.eachLayer(function(layer) {

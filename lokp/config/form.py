@@ -2272,12 +2272,17 @@ def getMapWidget(thematicgroup, geometry_type):
     field is marked as mandatory (lon) in order to prevent double error
     messages if it is missing.
     """
+    try:
+        label = thematicgroup.getMaintag().getKey().getName()
+    except AttributeError:
+        label = ''
     mapWidget = colander.SchemaNode(
         colander.Mapping(),
         widget=CustomMapWidget(
             template='customMapMapping',
             geometry_type=geometry_type,
-            edit_mode=thematicgroup.getMap().getMode()
+            edit_mode=thematicgroup.getMap().getMode(),
+            label=label,
         ),
         name=thematicgroup.getMap().getName(),
         title='map'+ str(thematicgroup.id)    # add unique title for the map widget (title serves as id in customMapMapping)
@@ -2667,5 +2672,6 @@ class CustomMapWidget(deform.widget.MappingWidget):
         kw.update({
             'geometry_type': self.geometry_type,
             'editmode': self.edit_mode,
+            'label': self.label,
         })
         return super().get_template_values(field, cstruct, kw)

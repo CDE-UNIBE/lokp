@@ -108,7 +108,6 @@ function addPointMarker(map, geojsonCoords) {
  */
 function addDealAreasToLayerControl(map, dbDealAreas) {
     // iterate over dictionary
-
     var layerDictionary = [];
     $.each(dbDealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
         var coords = polygon.coordinates;
@@ -127,13 +126,11 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
         var polygonL = L.polygon(
             coordsTransformed,
             {
-                color: getLayerColor(key)
+                color: getPolygonColorByLabel(key)
             });
 
         map.addLayer(polygonL); // polygons are initially added to the map
         layerDictionary[key] = polygonL;
-
-        // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
     });
 
     // add Layers to layer control
@@ -144,25 +141,6 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
     }
 }
 
-
-/**
- *
- * @param layerLabel label of the layer for which a color is defined based on it name
- * @return string specifying a color
- */
-function getLayerColor(layerLabel) {
-    var layerColor;
-    if (layerLabel === 'Intended area (ha)') {  // TODO: get string from config
-        layerColor = 'lightgreen';
-    }
-    if (layerLabel === 'Contract area (ha)') {
-        layerColor = 'green';
-    }
-    if (layerLabel === 'Current area in operation (ha)') {
-        layerColor = 'blue';
-    }
-    return layerColor
-}
 
 function initDetailsMap(map, options) {
     var dbDealAreas = options.dbDealAreas;

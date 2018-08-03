@@ -64,7 +64,7 @@ function initPolygonLayers(mapId, polygonKeys) {
     polygonKeys.forEach(function(keyPair, i) {
         var name = keyPair[0];
         var key = keyPair[1];
-        var color = getColors(i)[0];
+        var color = keyPair[2];
         html += '<p class="map-polygon-entry">' +
             '<input class="input-top area-layer-checkbox" type="checkbox" data-layer="' + key + '" id="map-' + mapId + '-poly-' + key + '">' +
             '<label class="text-primary-color" for="map-' + mapId + '-poly-' + key + '">' +
@@ -93,6 +93,15 @@ function initPolygonLayers(mapId, polygonKeys) {
 }
 
 
+function getPolygonColorByLabel(id) {
+    var options = $.grep(mapVariables.polygon_keys, function(e) { return e[1] === id });
+    if (options.length === 0) {
+        return 'green';
+    }
+    return options[0][2];
+}
+
+
 function setPolygonLayer(mapId, layerId) {
     var mapOptions = getMapOptionsById(mapId);
     if (typeof mapOptions.polygonLayers[layerId] === 'undefined') {
@@ -105,8 +114,7 @@ function setPolygonLayer(mapId, layerId) {
                 tggeom: 'true'
             },
             success: function(data) {
-                var mapKeys = mapOptions.mapVariables.polygon_keys.map(function(k) { return k[1]; });
-                var color = getColors(mapKeys.indexOf(layerId))[0];
+                var color = getPolygonColorByLabel(layerId);
                 var layer = L.geoJSON(data, {
                     style: function(feature) {
                         return {color: color}

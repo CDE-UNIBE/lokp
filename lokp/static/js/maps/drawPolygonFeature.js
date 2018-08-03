@@ -6,10 +6,11 @@ function initDrawControl(mapOptions) {
     var map = mapOptions.map;
     var geometryType = mapOptions.options.geometry_type['geometry_type'];
     var drawMultipleFeatures = mapOptions.options.draw_multiple_features;
+    var label = mapOptions.options.label;
 
     // Get initial features, store them to mapOptions and add them to the map.
     var geojsonString = getGeometryField(map).val();
-    var drawnFeatures = getDrawnFeatures(geojsonString);
+    var drawnFeatures = getDrawnFeatures(geojsonString, label);
     mapOptions['drawnFeatures'] = drawnFeatures;
     map.addLayer(drawnFeatures);
 
@@ -24,7 +25,7 @@ function initDrawControl(mapOptions) {
     }
 
     // Initialize the draw control and add it to the map.
-    var drawOptions = getDrawControlOptions(geometryType, drawnFeatures);
+    var drawOptions = getDrawControlOptions(geometryType, drawnFeatures, label);
     var drawControl = new L.Control.Draw(drawOptions);
     map.addControl(drawControl);
 
@@ -55,9 +56,10 @@ function initDrawControl(mapOptions) {
  * Return a FeatureGroup, either empty or containing initial features (Marker or
  * Polygon) as defined in the geojson string.
  * @param {string} geojsonString: A geojson (only the geometry).
+ * @param {string} label: The label of the map (actually the main tag of the taggroup).
  * @returns {L.featureGroup}
  */
-function getDrawnFeatures(geojsonString) {
+function getDrawnFeatures(geojsonString, label) {
     var drawnFeatures = L.featureGroup();
     if (geojsonString) {
         // If a geojson was provided (by the DB), parse it and add it (as
@@ -73,14 +75,14 @@ function getDrawnFeatures(geojsonString) {
             latLngCoords = geojson.coordinates.map(function(c) {
                 return L.GeoJSON.coordsToLatLngs(c);
             });
-            drawnFeatures.addLayer(L.polygon(latLngCoords));
+            drawnFeatures.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
         } else if (geojson.type === 'MultiPolygon') {
             // MultiPolygon: Add each polygon separately (so they are editable
             // independently).
             geojson.coordinates.forEach(function(c1) {
                 c1.forEach(function(c2) {
                     latLngCoords = L.GeoJSON.coordsToLatLngs(c2);
-                    drawnFeatures.addLayer(L.polygon(latLngCoords));
+                    drawnFeatures.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
                 })
             });
         }
@@ -147,9 +149,10 @@ function getGeometryField(map) {
  * @param {string} geomType: Either 'point' or 'polygon'
  * @param {L.featureGroup} drawnFeatures: The layers which can be edited with
  *        the edit toolbar
+ * @param {string} label: The label of the map (actually the main tag of the taggroup).
  * @returns {object} Object with draw options
  */
-function getDrawControlOptions(geomType, drawnFeatures) {
+function getDrawControlOptions(geomType, drawnFeatures, label) {
     // Shared drawing options
     var drawOptions = {
         position: 'topright',
@@ -189,7 +192,7 @@ function getDrawControlOptions(geomType, drawnFeatures) {
                     message: 'you can\'t draw that!' // Message that will show when intersect
                 },
                 shapeOptions: {
-                    color: '#bada55'
+                    color: getPolygonColorByLabel(label)
                 }
             },
             marker: false,
