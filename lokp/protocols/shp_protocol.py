@@ -6,7 +6,8 @@ import zipfile
 from cgi import FieldStorage
 
 import geojson
-import shapefile
+import geopandas
+from fiona.errors import FionaValueError
 from pyramid.view import view_config
 
 from lokp.config.files import upload_directory_path
@@ -20,8 +21,9 @@ class ShapefileProtocol:
         'application/x-esri-shape',
         'application/zip',
     ]
-    valid_shapes = [shapefile.POLYGON]
+    valid_shapes = ['Polygon']
     shapefile_required_files = ['.shp', '.dbf', '.shx']
+    default_crs = 'epsg:4326'
 
     def __init__(self, request):
         self.request = request
@@ -80,16 +82,27 @@ class ShapefileProtocol:
         # When extracting zip files, we need to find out the name of the
         # shapefile
         shapefile_path = self.find_shp_in_directory(self.temp_folder)
-        reader = shapefile.Reader(shapefile_path)
 
-        if reader.shapeType not in self.valid_shapes:
-            self.error = 'Invalid geometry.'
+        try:
+            geom_data_frame = geopandas.read_file(shapefile_path)
+        except FionaValueError:
+            self.error = 'Invalid file.'
             return
 
-        geometries = []
-        for shape in reader.shapes():
-            geom = shape.__geo_interface__
-            geometries.append(geojson.GeoJSON(geom))
+        # If the data is not in the default CRS, reproject it.
+        if geom_data_frame.crs.get('init') != self.default_crs:
+            geom_data_frame = geom_data_frame.to_crs({'init': self.default_crs})
+
+        # Check geometry types.
+        for index, row in geom_data_frame.iterrows():
+            if row.geometry.geom_type not in self.valid_shapes:
+                self.error = 'Invalid geometry.'
+                return
+
+        # The server must return only the geometry part(s) of the features, not
+        # the entire geojson.
+        geom_json = geojson.loads(geom_data_frame.to_json())
+        geometries = [f['geometry'] for f in geom_json['features']]
 
         if len(geometries) != 1:
             # If there are multiple features, create a single MultiPolygon out
