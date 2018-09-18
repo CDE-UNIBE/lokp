@@ -61,7 +61,7 @@ function getContextLayers(mapId, layerConfigs) {
  */
 function initPolygonLayers(mapId, polygonKeys) {
     var html = '';
-    polygonKeys.forEach(function(keyPair, i) {
+    polygonKeys.forEach(function(keyPair) {
         var name = keyPair[0];
         var key = keyPair[1];
         var color = keyPair[2];
@@ -538,6 +538,45 @@ function updateMapCriteria(mapId, translatedName, internalName) {
 
 
 /**
+ * Return a FeatureGroup, either empty or containing initial features (Marker or
+ * Polygon) as defined in the geojson string.
+ * @param {Object} geojson: A geojson (only the geometry).
+ * @param {string} label: The label of the map (actually the main tag of the taggroup).
+ * @returns {L.featureGroup}
+ */
+function getFeatureGroupFromGeometry(geojson, label) {
+    var featureGroup = L.featureGroup();
+    if (geojson) {
+        // If a geojson was provided (by the DB), parse it and add it (as
+        // editable) to the map.
+        // var geojson = JSON.parse(geojsonString);
+        var latLngCoords;
+        if (geojson.type === 'Point') {
+            // Point: Add a marker.
+            latLngCoords = L.GeoJSON.coordsToLatLng(geojson.coordinates);
+            featureGroup.addLayer(L.marker(latLngCoords));
+        } else if (geojson.type === 'Polygon') {
+            // Polygon: Add a single polygon.
+            latLngCoords = geojson.coordinates.map(function(c) {
+                return L.GeoJSON.coordsToLatLngs(c);
+            });
+            featureGroup.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
+        } else if (geojson.type === 'MultiPolygon') {
+            // MultiPolygon: Add each polygon separately (so they are editable
+            // independently).
+            geojson.coordinates.forEach(function(c1) {
+                c1.forEach(function(c2) {
+                    latLngCoords = L.GeoJSON.coordsToLatLngs(c2);
+                    featureGroup.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
+                })
+            });
+        }
+    }
+    return featureGroup;
+}
+
+
+/**
  * Helper to get the map ID from an element.
  * @param el
  */
@@ -578,6 +617,7 @@ function getActiveFilters() {
     }
     return activeFilters;
 }
+
 
 /**
  * Get colors by index. Returns a list of

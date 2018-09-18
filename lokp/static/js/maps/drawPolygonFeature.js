@@ -10,7 +10,12 @@ function initDrawControl(mapOptions) {
 
     // Get initial features, store them to mapOptions and add them to the map.
     var geojsonString = getGeometryField(map).val();
-    var drawnFeatures = getDrawnFeatures(geojsonString, label);
+    var geometry = {};
+    if (geojsonString) {
+        geometry = JSON.parse(geojsonString);
+    }
+
+    var drawnFeatures = getFeatureGroupFromGeometry(geometry, label);
     mapOptions['drawnFeatures'] = drawnFeatures;
     map.addLayer(drawnFeatures);
 
@@ -49,45 +54,6 @@ function initDrawControl(mapOptions) {
     }).on('draw:deleted', function(e) {
         updateGeometryField(map, drawnFeatures);
     });
-}
-
-
-/**
- * Return a FeatureGroup, either empty or containing initial features (Marker or
- * Polygon) as defined in the geojson string.
- * @param {string} geojsonString: A geojson (only the geometry).
- * @param {string} label: The label of the map (actually the main tag of the taggroup).
- * @returns {L.featureGroup}
- */
-function getDrawnFeatures(geojsonString, label) {
-    var drawnFeatures = L.featureGroup();
-    if (geojsonString) {
-        // If a geojson was provided (by the DB), parse it and add it (as
-        // editable) to the map.
-        var geojson = JSON.parse(geojsonString);
-        var latLngCoords;
-        if (geojson.type === 'Point') {
-            // Point: Add a marker.
-            latLngCoords = L.GeoJSON.coordsToLatLng(geojson.coordinates);
-            drawnFeatures.addLayer(L.marker(latLngCoords));
-        } else if (geojson.type === 'Polygon') {
-            // Polygon: Add a single polygon.
-            latLngCoords = geojson.coordinates.map(function(c) {
-                return L.GeoJSON.coordsToLatLngs(c);
-            });
-            drawnFeatures.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
-        } else if (geojson.type === 'MultiPolygon') {
-            // MultiPolygon: Add each polygon separately (so they are editable
-            // independently).
-            geojson.coordinates.forEach(function(c1) {
-                c1.forEach(function(c2) {
-                    latLngCoords = L.GeoJSON.coordsToLatLngs(c2);
-                    drawnFeatures.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
-                })
-            });
-        }
-    }
-    return drawnFeatures;
 }
 
 

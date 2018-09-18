@@ -340,9 +340,9 @@ ${field.end_mapping()}
          init: function() {
              this.on('successmultiple', function(files, response) {
                  var mapOptions = getMapOptionsById('${field.oid}');
-                 
+
                  // Get the new drawn features based on the response.
-                 var newDrawnFeatures = getDrawnFeatures(response, mapOptions.options.label);
+                 var newDrawnFeatures = getFeatureGroupFromGeometry(JSON.parse(response), mapOptions.options.label);
 
                  // Remove all existing drawn features.
                  mapOptions.drawnFeatures.eachLayer(function(layer) {
