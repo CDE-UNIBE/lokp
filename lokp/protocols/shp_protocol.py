@@ -96,7 +96,8 @@ class ShapefileProtocol:
         # Check geometry types.
         for index, row in geom_data_frame.iterrows():
             if row.geometry.geom_type not in self.valid_shapes:
-                self.error = 'Invalid geometry.'
+                self.error = f'Invalid geometry. Supported geometry types: ' \
+                             f'{", ".join(self.valid_shapes)}'
                 return
 
         # The server must return only the geometry part(s) of the features, not
