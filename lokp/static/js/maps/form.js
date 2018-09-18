@@ -13,7 +13,7 @@
  *          dbLocationGeometry: point geometry with the location of this deal (from database).
  *          dbDealAreas: list of polygons for each intended area, contract area and current area.
  */
-function createMap(mapId, options) {
+function createMap(mapId, options, geometry) {
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
@@ -74,6 +74,12 @@ function createMap(mapId, options) {
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
     initMapSearch(mapId);
+    
+    if (options.review === true) {
+        initComparisonPointMarkers(map, geometry);
+        initComparisonPolygonLayers(map, geometry);
+        return;
+    }
 
     if (options.readonly !== true) {
         initDrawControl(mapOptions);
