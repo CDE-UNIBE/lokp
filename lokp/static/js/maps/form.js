@@ -76,8 +76,9 @@ function createMap(mapId, options, geometry) {
     initMapSearch(mapId);
     
     if (options.review === true) {
-        initComparisonPointMarkers(map, geometry);
-        initComparisonPolygonLayers(map, geometry);
+        var pointLatLngList = initComparisonPointMarkers(map, geometry);
+        var areaLayerList = initComparisonPolygonLayers(map, geometry);
+        zoomToFeatures(map, pointLatLngList, areaLayerList);
         return;
     }
 
@@ -94,6 +95,25 @@ function createMap(mapId, options, geometry) {
  * Helper Methods
  ****************************************************/
 
+
+function zoomToFeatures(map, pointLatLngList, areaLayerList) {
+    var bbox = L.latLngBounds();
+    pointLatLngList.forEach(function(l) {
+        bbox.extend(l);
+    });
+    areaLayerList.forEach(function(l) {
+        bbox.extend(l.getBounds());
+    });
+    map.fitBounds(bbox);
+    // If the map is zoomed in way too much (e.g. only 1 point on the map), the
+    // map is not displayed correctly (no tiles). Set the zoom manually to
+    // something more reasonable.
+    if (map.getZoom() === map.getMaxZoom()) {
+        map.setZoom(15);
+    }
+}
+
+
 /**
  * Create a marker on the map and zoom to its location.
  * @param {L.map} map: The current map.
@@ -102,7 +122,7 @@ function createMap(mapId, options, geometry) {
 function addPointMarker(map, geojsonCoords) {
     var latLng = L.GeoJSON.coordsToLatLng(geojsonCoords);
     L.marker(latLng).addTo(map);
-    map.setView(latLng, 8);
+    return latLng;
 }
 
 /**
@@ -115,6 +135,7 @@ function addPointMarker(map, geojsonCoords) {
 function addDealAreasToLayerControl(map, dbDealAreas) {
     // iterate over dictionary
     var layerDictionary = [];
+    var areaLayers = [];
     $.each(dbDealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
         var coords = polygon.coordinates;
         var coordsTransformed;
@@ -134,6 +155,7 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
             {
                 color: getPolygonColorByLabel(key)
             });
+        areaLayers.push(polygonL);
 
         map.addLayer(polygonL); // polygons are initially added to the map
         layerDictionary[key] = polygonL;
@@ -145,13 +167,15 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
     if (!jQuery.isEmptyObject(layerDictionary)) {  // only add layer control if layers aren't empty
         L.control.layers([], layerDictionary).addTo(map);
     }
+    return areaLayers;
 }
 
 
 function initDetailsMap(map, options) {
     var dbDealAreas = options.dbDealAreas;
-    addPointMarker(map, options.dbLocationGeometry.coordinates);
-    addDealAreasToLayerControl(map, dbDealAreas);
+    var pointLatLng = addPointMarker(map, options.dbLocationGeometry.coordinates);
+    var areaLayerList = addDealAreasToLayerControl(map, dbDealAreas);
+    zoomToFeatures(map, [pointLatLng], areaLayerList);
 }
 
 /**

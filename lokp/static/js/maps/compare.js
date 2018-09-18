@@ -8,14 +8,17 @@ function initComparisonPointMarkers(map, geometry) {
         geometry.new.geometry
     ];
     var refOrNewKey = 'ref';
+    var latLngs = [];
     pointGeometries.forEach(function(geom) {
         if (geom) {
             var coords = L.GeoJSON.coordsToLatLng(geom.coordinates);
+            latLngs.push(coords);
             var icon = getCustomMarker(refOrNewKey);
             L.marker(coords, {icon: icon}).addTo(map);
         }
         refOrNewKey = 'new';
     });
+    return latLngs;
 }
 
 
@@ -52,6 +55,7 @@ function initComparisonPolygonLayers(map, geometry) {
     };
     var polygonLayers = {};
     var refOrNewKey = 'ref';
+    var layerList = [];
     [refAreas, newAreas].forEach(function(areas) {
         for (var a in areas) {
             if (areas.hasOwnProperty(a)) {
@@ -62,6 +66,7 @@ function initComparisonPolygonLayers(map, geometry) {
                 });
                 map.addLayer(layer);
                 polygonLayers[refOrNewOptions[refOrNewKey].prefix + a] = layer;
+                layerList.push(layer);
             }
         }
         refOrNewKey = 'new';
@@ -71,4 +76,5 @@ function initComparisonPolygonLayers(map, geometry) {
     if (!jQuery.isEmptyObject(polygonLayers)) {
         L.control.layers([], polygonLayers).addTo(map);
     }
+    return layerList;
 }
