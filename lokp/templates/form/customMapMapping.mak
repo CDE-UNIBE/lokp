@@ -337,6 +337,7 @@ ${field.end_mapping()}
          autoProcessQueue: false,
          addRemoveLinks: true,
          parallelUploads: 10,
+         acceptedFiles: '.shp,.shx,.dbf,.prj,.sbn,.sbx,.fbn,.fbx,.ain,.aih,.ixs,.mxs,.atx,.shp.xml,.cpg,.qix,.zip',
          init: function() {
              this.on('successmultiple', function(files, response) {
                  var mapOptions = getMapOptionsById('${field.oid}');
