@@ -66,10 +66,9 @@ class BaseView(object):
         # Check if profile (_PROFILE_) is set
         if self.request is not None:
             # TODO
-            if '_PROFILE_' not in self.request.params:
+            if '_PROFILE_' in self.request.params:
                 # Set the profile cookie
                 profile_code = self.request.params.get('_PROFILE_')
-                profile_code = 'myanmar'
                 response.set_cookie(
                     '_PROFILE_', profile_code, timedelta(days=90))
 

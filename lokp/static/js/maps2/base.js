@@ -297,10 +297,6 @@ function showContextLegendModal(mapId, name, layer) {
  * @param map
  */
 function initMapContent(map) {
-
-    // zoom to myanmar
-    map.setView([21.9162, 95.9560], 6);
-
     var mapOptions = getMapOptionsFromMap(map);
     var mapCriteria = mapOptions.mapVariables.map_criteria;
     var mapValues = mapOptions.mapVariables.map_symbol_values;
