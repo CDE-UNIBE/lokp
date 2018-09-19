@@ -46,11 +46,11 @@ Run tests
 
 Run all tests::
 
-    (env) $ py.test
+    (env) $ pytest
 
 Run tests with browser window popping up::
 
-    (env) $ py.test -pop
+    (env) $ pytest -pop
 
 To run only a selected test, mark the test with::
 
@@ -59,5 +59,5 @@ To run only a selected test, mark the test with::
 
 ... and run the test as follows::
 
-    (env) $ py.test -m foo
+    (env) $ pytest -m foo
 

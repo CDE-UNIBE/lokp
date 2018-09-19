@@ -36,6 +36,7 @@ requires = [
 tests_require = [
     'pytest==3.3.2',
     'pytest-cov==2.5.1',
+    'pytest-rerunfailures==4.1',
     'PyVirtualDisplay==0.2.1',
     'requests==2.18.4',
     'selenium==3.8.1',
