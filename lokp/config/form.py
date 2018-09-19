@@ -2306,7 +2306,7 @@ def getMapWidget(thematicgroup, geometry_type):
         'lokp:static/lib/leaflet/leaflet.draw.js',
         '/app/view/map_variables.js',
         'lokp:static/lib/chroma/chroma.min.js',
-        'lokp:static/js/maps2/base.js',
+        'lokp:static/js/maps/base.js',
         'lokp:static/js/maps/form.js',
         'lokp:static/js/maps/drawPolygonFeature.js',
         'lokp:static/lib/dropzone/dropzone.min.js',
