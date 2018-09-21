@@ -206,9 +206,17 @@ class ActivityProtocol(Protocol):
             for taggroup in activity.get('taggroups', []):
                 main_tag_key = taggroup.get('main_tag', {}).get('key')
                 _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
-                if config_taggroup is not None and config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
-                    'geometry', colander.null) == colander.null:
-                    continue
+
+                # If the taggroup has a map and only contains a single tag with
+                # an empty geometry, then move on
+                tg_has_map = config_taggroup is not None and config_taggroup.getMap() is not None
+                tg_has_single_tag = len(taggroup['tags']) == 1
+                if config_taggroup is not None and tg_has_map and tg_has_single_tag:
+                    tag = taggroup['tags'][0]
+                    tag_value = tag.get('value')
+                    if isinstance(tag_value, dict) and tag_value.get(
+                            'geometry') == colander.null:
+                        continue
 
                 # Remove tags with empty geometry. Prevents errors when saving
                 # taggroups having a main tag (e.g. intended area) but no
