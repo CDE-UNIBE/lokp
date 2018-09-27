@@ -55,12 +55,20 @@ def get_map_variables(request):
     except IOError:
         config = {}
 
+    map_colors = {
+        'Intended area (ha)': '#1d6914',
+        'Contract area (ha)': '#2a4bd7',
+        'Current area in operation (ha)': '#ad2323',
+    }
+    polygon_keys = [
+        p + [map_colors[p[0]]] for p
+        in form_geomtaggroups(request).get('mainkeys', [])]
     return 'var mapVariables = ' + json.dumps({
         'map_symbol_values': map_symbol_values,
         'map_criteria': map_criteria,
         'map_criteria_all': map_symbols,
         'context_layers': config.get('application', {}).get('layers', []),
-        'polygon_keys': form_geomtaggroups(request).get('mainkeys', []),
+        'polygon_keys': polygon_keys,
         'profile_polygon': get_current_profile_extent(request),
         'translations': {
             'loading': _('Loading ...'),

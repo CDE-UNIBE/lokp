@@ -289,7 +289,7 @@ def get_bbox_parameters(request, cookies=True):
         ``str`` or ``None``. The epsg parameter or None.
     """
     bbox = request.params.get('bbox')
-    epsg = request.params.get('epsg', '900913')
+    epsg = request.params.get('epsg', '4326')
     if cookies and bbox is None:
         location = request.cookies.get('_LOCATION_')
         if location:

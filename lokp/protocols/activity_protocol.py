@@ -206,20 +206,46 @@ class ActivityProtocol(Protocol):
             for taggroup in activity.get('taggroups', []):
                 main_tag_key = taggroup.get('main_tag', {}).get('key')
                 _, _, config_taggroup = category_list.findCategoryThematicgroupTaggroupByMainkey(main_tag_key)
-                if config_taggroup is not None and config_taggroup.getMap() is not None and len(taggroup['tags']) == 1 and taggroup['tags'][0].get(
-                    'geometry', colander.null) == colander.null:
-                    continue
+
+                # If the taggroup has a map and only contains a single tag with
+                # an empty geometry, then move on
+                tg_has_map = config_taggroup is not None and config_taggroup.getMap() is not None
+                tg_has_single_tag = len(taggroup['tags']) == 1
+                if config_taggroup is not None and tg_has_map and tg_has_single_tag:
+                    tag = taggroup['tags'][0]
+                    tag_value = tag.get('value')
+                    if isinstance(tag_value, dict) and tag_value.get(
+                            'geometry') == colander.null:
+                        continue
 
                 # Remove tags with empty geometry. Prevents errors when saving
                 # taggroups having a main tag (e.g. intended area) but no
                 # polygon was drawn.
-                taggroup['tags'] = [
-                    t for t in taggroup.get('tags', [])
-                    if t.get('value') != {'geometry': colander.null}]
+                # But, do not remove tag with empty geometry if in the same
+                # taggroup, a tag with geometry is to be removed. This means
+                # that the geometry was deleted (1x "delete", 1x "add" with
+                # empty geometry). In this case, leave the added empty geometry
+                # so the geometry will be removed in the db.
+                has_geometry_deleted = False
+                for t in taggroup.get('tags', []):
+                    t_has_geometry = isinstance(t['value'], dict) and \
+                                      'geometry' in t['value']
+                    if t_has_geometry and t['op'] == 'delete':
+                        has_geometry_deleted = True
+
+                tags = []
+                for t in taggroup.get('tags', []):
+                    v = t.get('value')
+                    if v != {'geometry': colander.null}:
+                        tags.append(t)
+                    elif has_geometry_deleted:
+                        t['value'] = {'geometry': None}
+                        tags.append(t)
+                taggroup['tags'] = tags
 
                 cleaned_activity['taggroups'].append(taggroup)
 
-            log.debug('The diff to create/update the activity after removing empty geometry taggroups: %s' % diff)
+            log.debug('The diff to create/update the activity after removing empty geometry taggroups: %s' % cleaned_activity)
 
             a, ret_diff = self._handle_activity(request, cleaned_activity, changeset)
 

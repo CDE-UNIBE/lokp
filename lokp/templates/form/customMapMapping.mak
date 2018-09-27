@@ -21,6 +21,10 @@
     from mako.template import Template
     from mako.lookup import TemplateLookup
 
+    allow_shapefile_upload = geometry_type['geometry_type'] == 'polygon'
+
+    # This is a temporary solution: Allow multiple features for polygons, not for points.
+    draw_multiple_features = 'true' if allow_shapefile_upload else 'false'
 %>
 
 
@@ -53,19 +57,19 @@
            data-tooltip="${_('Map Options')}" data-activates="slide-out-map-options-${field.oid}">
             <i class="material-icons">map</i>
         </a>
-##         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
-##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.oid}">
-##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
-##         </a>
-##         % if len(activeFilters) == 1:
-##             <span class="badge"
-##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
-##                 active filter</span>
-##         % else:
-##             <span class="badge"
-##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
-##                 active filters</span>
-##         % endif
+        ##         <a class="btn-floating tooltipped btn-large button-collapse" data-position="top"
+        ##            data-tooltip="${_('Add a Filter')}" data-activates="slide-out-filter-${field.oid}">
+        ##             <i class="material-icons" style="margin-right: 15px;" data-position="top">filter_list</i>
+        ##         </a>
+        ##         % if len(activeFilters) == 1:
+        ##             <span class="badge"
+        ##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
+        ##                 active filter</span>
+        ##         % else:
+        ##             <span class="badge"
+        ##                   style="color: white; background-color: #323232; position: relative; top: -25px; left: -40px; z-index: 1; border-radius: 5px;">${len(activeFilters)}
+        ##                 active filters</span>
+        ##         % endif
     </div>
 
     ## Manages green layer button
@@ -92,11 +96,6 @@
             </div>
         </div></%doc>
 </div>
-
-
-
-
-
 
 ## Map Menu
 
@@ -185,7 +184,7 @@
 
 ## Map modal (used for legend of context layers)
 
-<div id="map-modal-${field.oid}" class="modal">
+<div id="map-modal-${field.oid}" class="modal map-modal">
     <div id="map-modal-body-${field.oid}" class="modal-content">
         ## Placeholder for map modal
   </div>
@@ -221,57 +220,87 @@ ${template.render(request=request, geometry=geometry, editmode=editmode, _=_)}
     </li>
 % endif
 
-<div class="row" style="margin-top: 10px;">
-    <div class="col s12">
-        % if field.required:
-            <span class="required-form-field"></span>
-        % endif
-        ${_('Set the location')}&nbsp;<span class="helpTooltip icon-question-sign tooltipped" data-position="top"
-                                            data-delay="50"
-                                            data-tooltip="${_('Use the toolbar to the right to draw the location. Please zoom in to set the geometry as accurately as possible.')}"></span>
-##         <p style="margin-top: 10px;">${_('Please use the QGIS plugin to add or edit polygons.')} <a
-##                 href="http://lokp.readthedocs.org/en/latest/qgis.html" target="_blank"
-##                 class="text-accent-color">${_('Read more.')}</a></p>
+<div class="row map-actions">
+  <div class="col s12">
+    <ul class="tabs tabs-fixed-width z-depth-1">
+      <li class="tab"><a href="#tab-${field.oid}-1">${_('Instructions')}</a></li>
+      <li class="tab"><a href="#tab-${field.oid}-2">${_('Parse coordinates')}</a></li>
+      <li class="tab${' disabled' if not allow_shapefile_upload else ''}"><a href="#tab-${field.oid}-3">${_('Upload shapefile')}</a></li>
+    </ul>
+  </div>
+  <div id="tab-${field.oid}-1" class="col s12">
+    <div class="tab-content-bordered">
+      % if geometry_type['geometry_type'] == 'point':
+        <p>${_('Set the location of the deal.')}</p>
+      % else:
+        <p>${_('Set the corresponding area.')}</p>
+      % endif
+      <p>${_('Use the toolbar to the right to draw the location. Please zoom in to set the geometry as accurately as possible.')}</p>
     </div>
+  </div>
+  <div id="tab-${field.oid}-2" class="col s12">
+    <div class="tab-content-bordered">
+      <div class="row">
+        <div class="col s12">
+          <p>You can enter coordinates to zoom to a certain location. Please note that you will still have to set a point or draw a polygon manually.</p>
+          <br>
+        </div>
+        <div class="col s8">
+          <label for="map-coords-field-${field.oid}">${_('Coordinates')}</label>
+          <input id="map-coords-field-${field.oid}" class="input-style" type="text"/>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s8">
+          <select id="map-coords-format-${field.oid}">
+            <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
+            <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
+            <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
+            <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
+            <option value="5" selected>46.95263, 7.43517</option>
+          </select>
+          <label>Select Format</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12">
+          <button id="map-coords-button" class="btn btn-small"
+                  onClick="javascript:parseCoordinates('${field.oid}'); return false;">${_('Parse')}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-${field.oid}-3" class="col s12">
+    <div class="tab-content-bordered">
+      % if allow_shapefile_upload:
+        <div class="row map-shapefile-dropzone">
+          <div class="col s12">
+            <p>You can upload the necessary parts of a Shapfile (.shp, .dbf, .shx) either as separate files or as a .zip file. The files will be deleted from the server directly after the upload.</p>
+            <p>Caution: Uploading a Shapefile will remove all previous geometries from the map!</p>
+            <form action="${request.route_url('shp_upload')}" class="dropzone" id="dropzone-${field.oid}">
+              <div class="fallback">
+                <input name="file" type="file" multiple />
+              </div>
+            </form>
+            <button class="btn btn-small btn-primary" onclick="Dropzone.forElement('#dropzone-${field.oid}').processQueue(); return false;">Upload</button>
+            <button class="btn btn-small btn-warning right" onclick="Dropzone.forElement('#dropzone-${field.oid}').removeAllFiles(true); return false;">Remove all</button>
+          </div>
+        </div>
+      % endif
+    </div>
+  </div>
+  <div class="col s12 map-actions-feedback">
+    <div class="alert alert-success closable-alert" id="map-actions-feedback-${field.oid}" style="display: none;">
+      <div class="js-error-message"><!-- Placeholder --></div>
+      <i class="material-icons alert-close-icon js-alert-hide">close</i>
+    </div>
+  </div>
 </div>
 
 <script type="text/javascript">
     var tForSuccess = "${_('Success!')}";
     var tForInvalidFormat = "${_('Not in a valid format!')}";
 </script>
-
-
-
-## coordinates div appears when triggerCoordinatesDiv is clicked
-<div id="coordinates-div" style="display: none;">
-        <div class="row">
-            <div class="col s8">
-                <label for="map-coords-field">${_('Coordinates')}</label>
-                <input id="map-coords-field" class="input-style" type="text" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="input-field col s8">
-                <select id="map-coords-format">
-                    <option value="1">46&deg; 57.1578 N 7&deg; 26.1102 E</option>
-                    <option value="2">46&deg 57' 9.468" N 7&deg 26' 6.612" E</option>
-                    <option value="3">N 46&deg 57.1578 E 7&deg 26.1102</option>
-                    <option value="4">N 46&deg 57' 9.468" E 7&deg 26' 6.612"</option>
-                    <option value="5" selected>46.95263, 7.43517</option>
-                </select>
-                <label>Select Format</label>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col s12">
-                <button id="map-coords-button" class="btn btn-small" onClick="javascript:return parseCoordinates('${field.oid}');">${_('Parse')}</button>
-            </div>
-            <div id="map-coords-message" class="col s8">
-                <!-- Placeholder -->
-            </div>
-        </div>
-</div>
-
 
 ${field.start_mapping()}
 
@@ -284,18 +313,61 @@ ${field.end_mapping()}
 <script>
     deform.addCallback(
             ['${field.oid}', '${field.title}'],
-            function(args) {
+            function (args) {
+
                 var oid = args[0];
                 var title = args[1];
+
                 if (window['loaded_maps'] === undefined) {
                     window['loaded_maps'] = [];
                 }
+
                 if (window['loaded_maps'].indexOf(title) === -1) {
-                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}}); // get geometry_type variable from python
+                    createMap(oid, {pointsVisible: true, pointsCluster: true, geometry_type: ${geometry_type}, draw_multiple_features: ${draw_multiple_features}, label: '${label}'});
                     window['loaded_maps'].push(title);
                 } else {
                     $('#' + oid).hide();
                 }
             }
     );
+
+    % if allow_shapefile_upload:
+       $('#dropzone-${field.oid}').dropzone({
+         uploadMultiple: true,
+         autoProcessQueue: false,
+         addRemoveLinks: true,
+         parallelUploads: 10,
+         acceptedFiles: '.shp,.shx,.dbf,.prj,.sbn,.sbx,.fbn,.fbx,.ain,.aih,.ixs,.mxs,.atx,.shp.xml,.cpg,.qix,.zip',
+         init: function() {
+             this.on('successmultiple', function(files, response) {
+                 var mapOptions = getMapOptionsById('${field.oid}');
+
+                 // Get the new drawn features based on the response.
+                 var newDrawnFeatures = getFeatureGroupFromGeometry(JSON.parse(response), mapOptions.options.label);
+
+                 // Remove all existing drawn features.
+                 mapOptions.drawnFeatures.eachLayer(function(layer) {
+                     mapOptions.drawnFeatures.removeLayer(layer);
+                 });
+
+                 // Add the new drawn features and zoom to them.
+                 newDrawnFeatures.eachLayer(function(layer) {
+                     mapOptions.drawnFeatures.addLayer(layer);
+                 });
+                 mapOptions.map.fitBounds(newDrawnFeatures.getBounds());
+
+                 // Update the geometry field.
+                 updateGeometryField(mapOptions.map, newDrawnFeatures);
+
+                 // Reset the upload field
+                 this.removeAllFiles();
+
+                 showParseFeedback('${field.oid}', 'Shapefile successfully uploaded.', 'success');
+             })
+                 .on('error', function(file, response) {
+                     showParseFeedback('${field.oid}', response.error, 'error');
+                 });
+         }
+       });
+    % endif
 </script>

@@ -61,10 +61,10 @@ function getContextLayers(mapId, layerConfigs) {
  */
 function initPolygonLayers(mapId, polygonKeys) {
     var html = '';
-    polygonKeys.forEach(function(keyPair, i) {
+    polygonKeys.forEach(function(keyPair) {
         var name = keyPair[0];
         var key = keyPair[1];
-        var color = getColors(i)[0];
+        var color = keyPair[2];
         html += '<p class="map-polygon-entry">' +
             '<input class="input-top area-layer-checkbox" type="checkbox" data-layer="' + key + '" id="map-' + mapId + '-poly-' + key + '">' +
             '<label class="text-primary-color" for="map-' + mapId + '-poly-' + key + '">' +
@@ -93,6 +93,15 @@ function initPolygonLayers(mapId, polygonKeys) {
 }
 
 
+function getPolygonColorByLabel(id) {
+    var options = $.grep(mapVariables.polygon_keys, function(e) { return e[1] === id });
+    if (options.length === 0) {
+        return 'green';
+    }
+    return options[0][2];
+}
+
+
 function setPolygonLayer(mapId, layerId) {
     var mapOptions = getMapOptionsById(mapId);
     if (typeof mapOptions.polygonLayers[layerId] === 'undefined') {
@@ -105,8 +114,7 @@ function setPolygonLayer(mapId, layerId) {
                 tggeom: 'true'
             },
             success: function(data) {
-                var mapKeys = mapOptions.mapVariables.polygon_keys.map(function(k) { return k[1]; });
-                var color = getColors(mapKeys.indexOf(layerId))[0];
+                var color = getPolygonColorByLabel(layerId);
                 var layer = L.geoJSON(data, {
                     style: function(feature) {
                         return {color: color}
@@ -185,7 +193,8 @@ function initContextLayerControl() {
  * Initialize field to search for places with Google.
  */
 function initMapSearch(mapId) {
-    var searchField = $('#js-map-search-' + mapId);
+    var searchField = $('#js-map-search-' + mapId);  //
+
     if (searchField.length === 0) return;
 
     var mapSearch = new google.maps.places.SearchBox(searchField[0]);
@@ -198,24 +207,45 @@ function initMapSearch(mapId) {
 
         // Zoom to location
         var latLng = L.latLng(loc.lat, loc.lng);
-        map.setView(latLng, 14);
-
-        // Set marker if wanted.
-        if (searchField.data('set-marker')) {
-            if (mapOptions.activeMapMarker !== null) {
-                map.removeLayer(mapOptions.activeMapMarker);
-            }
-            var marker = L.marker(latLng);
-            marker.addTo(map);
-            mapOptions.activeMapMarker = marker;
-            // Remove marker on click.
-            marker.on('click', function() {
-                map.removeLayer(this);
-                mapOptions.activeMapMarker = null;
-            });
-        }
+        zoomAddSearchMarker(mapOptions, latLng, searchField.data('set-marker'));
     });
 }
+
+/**
+ * Zoom to a certain location after a search (or coordinate parsing). Optionally
+ * also set a marker.
+ * @param mapOptions
+ * @param latLng
+ * @param {boolean} setMarker
+ */
+function zoomAddSearchMarker(mapOptions, latLng, setMarker) {
+    var map = mapOptions.map;
+    map.setView(latLng, 14);
+
+    // Set marker if wanted.
+    if (setMarker) {
+        if (mapOptions.activeMapMarker !== null) {
+            map.removeLayer(mapOptions.activeMapMarker);
+        }
+        var altIconColor = 'red';
+        var iconColor = 'white';
+        var marker = L.marker(latLng, {
+            icon: L.divIcon({
+                html: '<div style="background-color: ' + altIconColor + '"><div style="background-color: ' + iconColor + '"></div></div>',
+                iconSize: L.point(40, 40),
+                className: 'map-single-icon'
+            })
+        });
+        marker.addTo(map);
+        mapOptions.activeMapMarker = marker;
+        // Remove marker on click.
+        marker.on('click', function() {
+            map.removeLayer(this);
+            mapOptions.activeMapMarker = null;
+        });
+    }
+}
+
 
 
 /**
@@ -267,7 +297,6 @@ function showContextLegendModal(mapId, name, layer) {
  * @param map
  */
 function initMapContent(map) {
-
     var mapOptions = getMapOptionsFromMap(map);
     var mapCriteria = mapOptions.mapVariables.map_criteria;
     var mapValues = mapOptions.mapVariables.map_symbol_values;
@@ -308,7 +337,6 @@ function initMapContent(map) {
                         'features': dataGrouped[key]
                     };
                     var geojsonLayer;
-                    console.log(pointsCluster);
                     if (pointsCluster === true) {
                         // Define a cluster of markers for each map criteria value
 
@@ -390,8 +418,6 @@ function initMapContent(map) {
             }
 
             var mapOptions = getMapOptionsFromMap(map);
-            console.log(mapOptions.options.pointsVisible);
-            console.log(mapOptions);
             if (mapOptions.options.pointsVisible === true) {
                 map.addLayer(dealLayer);
             }
@@ -508,6 +534,45 @@ function updateMapCriteria(mapId, translatedName, internalName) {
 
 
 /**
+ * Return a FeatureGroup, either empty or containing initial features (Marker or
+ * Polygon) as defined in the geojson string.
+ * @param {Object} geojson: A geojson (only the geometry).
+ * @param {string} label: The label of the map (actually the main tag of the taggroup).
+ * @returns {L.featureGroup}
+ */
+function getFeatureGroupFromGeometry(geojson, label) {
+    var featureGroup = L.featureGroup();
+    if (geojson) {
+        // If a geojson was provided (by the DB), parse it and add it (as
+        // editable) to the map.
+        // var geojson = JSON.parse(geojsonString);
+        var latLngCoords;
+        if (geojson.type === 'Point') {
+            // Point: Add a marker.
+            latLngCoords = L.GeoJSON.coordsToLatLng(geojson.coordinates);
+            featureGroup.addLayer(L.marker(latLngCoords));
+        } else if (geojson.type === 'Polygon') {
+            // Polygon: Add a single polygon.
+            latLngCoords = geojson.coordinates.map(function(c) {
+                return L.GeoJSON.coordsToLatLngs(c);
+            });
+            featureGroup.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
+        } else if (geojson.type === 'MultiPolygon') {
+            // MultiPolygon: Add each polygon separately (so they are editable
+            // independently).
+            geojson.coordinates.forEach(function(c1) {
+                c1.forEach(function(c2) {
+                    latLngCoords = L.GeoJSON.coordsToLatLngs(c2);
+                    featureGroup.addLayer(L.polygon(latLngCoords, {color: getPolygonColorByLabel(label)}));
+                })
+            });
+        }
+    }
+    return featureGroup;
+}
+
+
+/**
  * Helper to get the map ID from an element.
  * @param el
  */
@@ -548,6 +613,7 @@ function getActiveFilters() {
     }
     return activeFilters;
 }
+
 
 /**
  * Get colors by index. Returns a list of

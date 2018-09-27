@@ -23,6 +23,7 @@ requires = [
     'pyramid_mailer==0.15.1',
     'pyramid_mako==1.0.2',
     'pyramid_tm==2.2',
+    'geopandas==0.4.0',
     'pyyaml==3.12',
     'shapely==1.6.3',
     'sqlalchemy==1.2.1',
@@ -35,6 +36,7 @@ requires = [
 tests_require = [
     'pytest==3.3.2',
     'pytest-cov==2.5.1',
+    'pytest-rerunfailures==4.1',
     'PyVirtualDisplay==0.2.1',
     'requests==2.18.4',
     'selenium==3.8.1',

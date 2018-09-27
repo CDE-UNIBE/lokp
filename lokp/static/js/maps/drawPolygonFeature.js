@@ -1,212 +1,172 @@
 /**
- * Adds buttons for creating and editing polygons/points to the map. Polygons saved in session are drawn to the
- * map and can be edited.
- *
- * @param map: leaflet map to which draw control is added.
- * @param geometry_type: defines whether the added draw control allows drawing of polygons or points.
- * @param mapId: the id of the container containing map (container id is defined in customMapMapping.mak)
+ * Initialize controls, buttons etc. to draw on the map. Loads initial features.
+ * @param {object} mapOptions
  */
-var initDrawPolygonControl = function (map, geometry_type, mapId) {
+function initDrawControl(mapOptions) {
+    var map = mapOptions.map;
+    var geometryType = mapOptions.options.geometry_type['geometry_type'];
+    var drawMultipleFeatures = mapOptions.options.draw_multiple_features;
+    var label = mapOptions.options.label;
 
-    // get geometry field in which drawn coordinates are written
-    var $geometry = $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]')
-    var editableLayers = new L.FeatureGroup();
-
-    map.addLayer(editableLayers);
-    writeGeometryFieldToDrawControl($geometry, map, editableLayers);
-
-    var drawOptions = defineDrawOptions(geometry_type, editableLayers);
-
-    var drawControl = new L.Control.Draw(drawOptions);
-
-    // initialize listeners
-    map.addControl(drawControl);
-
-    map.on(L.Draw.Event.CREATED, function (e) {
-        var type = e.layerType,
-            layer = e.layer;
-
-        clearDrawnElements(map, editableLayers);
-        editableLayers.addLayer(layer);
-
-    });
-
-    // add listener which writes the layer's coordinates to the form once the layer is created
-
-    map.on('draw:created', function (e) {
-        var layerJSON = e.layer.toGeoJSON();
-
-        // write json to geometry field
-        $geometry.val(JSON.stringify(layerJSON.geometry));
-    });
-
-
-    // Receive coordinates fired when coordinates are entered manually
-    if (mapId == 'map11') {
-        window.addEventListener('sendCoordinates', function (e) {
-            clearDrawnElements(map, editableLayers);
-            var coordinates = e.detail; // get coordinates from event
-            var marker = L.marker(coordinates);
-            editableLayers.addLayer(marker);
-            // write json to geometry field
-            $geometry.val(JSON.stringify(marker.toGeoJSON().geometry));
-
-            zoomToDealLocation(map, coordinates);
-        }, false);
+    // Get initial features, store them to mapOptions and add them to the map.
+    var geojsonString = getGeometryField(map).val();
+    var geometry = {};
+    if (geojsonString) {
+        geometry = JSON.parse(geojsonString);
     }
 
-    map.on('draw:deleted', function (e) {
-        $geometry.val(null);
-    });
+    var drawnFeatures = getFeatureGroupFromGeometry(geometry, label);
+    mapOptions['drawnFeatures'] = drawnFeatures;
+    map.addLayer(drawnFeatures);
 
-    map.on('draw:edited', function (e) {
-        var layers = e.layers._layers; // layers is a dictionary of edited layers
-        var layer;
-        // get layer from dictionary
-        for (var key in layers) {
-            layer = layers[key];
+    // Zoom to layer.
+    var bounds = drawnFeatures.getBounds();
+    if (bounds.isValid()) {
+        if (geometryType === 'point') {
+            map.setView(bounds.getCenter(), 8)
+        } else {
+            map.fitBounds(bounds);
         }
+    }
 
-        var layerJSON = layer.toGeoJSON();
-        // set polygon value
-        $geometry.val(JSON.stringify(layerJSON.geometry));
+    // Initialize the draw control and add it to the map.
+    var drawOptions = getDrawControlOptions(geometryType, drawnFeatures, label);
+    var drawControl = new L.Control.Draw(drawOptions);
+    map.addControl(drawControl);
+
+    // Events: If only single features can be drawn, remove the previous
+    // features when creating a new one.
+    map.on(L.Draw.Event.CREATED, function(e) {
+        if (!drawMultipleFeatures) {
+            // Remove existing features if only one can be drawn
+            drawnFeatures.eachLayer(function(layer) {
+                drawnFeatures.removeLayer(layer);
+            });
+        }
+        drawnFeatures.addLayer(e.layer);
     });
-};
+
+    // After creating, editing or deleting features, update the geometry field.
+    map.on('draw:created', function(e) {
+        updateGeometryField(map, drawnFeatures);
+    }).on('draw:edited', function(e) {
+        updateGeometryField(map, drawnFeatures);
+    }).on('draw:deleted', function(e) {
+        updateGeometryField(map, drawnFeatures);
+    });
+}
 
 
 /**
- *  Gets coordinates from the geometry field belonging to map, creates a layer with the coordinates and
- *  adds the layer to editableLayers (to enable editing with draw control.)
- * @param geometryField: the field from which geometry is read (as json in a string)
- * @param map: to map to zoom to
- * @param editableLayers: layers which can be drawn/ edited
+ * Update the hidden geometry field of the form based on the features currently
+ * drawn on the map.
+ * @param {L.map} map: The current map.
+ * @param {L.featureGroup} features: The features currently drawn on the map.
  */
-function writeGeometryFieldToDrawControl(geometryField, map, editableLayers) {
-    var geometryVal = geometryField.val(); // string
-
-    if (geometryVal !== "" && geometryVal !== null) {   // check for empty geometries
-        var geometryJSON = JSON.parse(geometryVal);
-
-        if (geometryJSON.type == "Point") {
-            var coord = geometryJSON.coordinates;
-            var coordLatLon = coord.reverse();
-            editableLayers.addLayer(L.marker(coordLatLon));
-            zoomToDealLocation(map, coordLatLon);
-        }
-        if (geometryJSON.type == "Polygon") {
-            var coordinatesLongLat = geometryJSON.coordinates[0];
-            var coordinatesLatLong = changeToLatLon(coordinatesLongLat);
-            var polygonLayer = L.polygon(coordinatesLatLong);      // this must't be a layer of type L.geoJSON
-            editableLayers.addLayer(polygonLayer);
-        }
+function updateGeometryField(map, features) {
+    // Extract only the geometries of the geojson
+    var geomList = features.toGeoJSON().features.map(function(f) {
+        return f.geometry;
+    });
+    if (geomList.length === 0) {
+        writeGeometry(map, null);
+    }
+    else if (geomList.length === 1) {
+        writeGeometry(map, geomList[0]);
+    } else {
+        // Each polygon is on a separate layer. Smash them together and create a
+        // new MultiPolygon feature.
+        var newGeometry = {
+            type: 'MultiPolygon',
+            coordinates: geomList.map(function(g) {
+                return g.coordinates;
+            })
+        };
+        writeGeometry(map, newGeometry);
     }
 }
 
-/**
- * Adds location to the drawControl, enabling editing of that geometry
- * @param latLong: list, containing two coordinate values for latitude and longitude
- */
-// function addGeometryToDrawControl(latLong) {
-//     editableLayers.addLayer(L.marker(latLong));
-//     zoomToDealLocation(map, latLong);
-//     map.addLayer(L.marker(latLong));
-// }
 
 /**
- * Defines draw and edit functionality of draw control. Defines which options are displayed in the draw
- * toolbar, depending on geometry_type
+ * Write the geojson to the hidden geometry field.
+ * @param {L.map} map: The current map.
+ * @param {object|null} geometryJSON: The geometry JSON or null if empty.
+ */
+function writeGeometry(map, geometryJSON) {
+    var val = (geometryJSON === null) ? '' : JSON.stringify(geometryJSON);
+    getGeometryField(map).val(val);
+}
+
+
+/**
+ * Get the hidden geometry form field relative to the current map.
+ * @param {L.map} map: The current map.
+ * @returns {jQuery}
+ */
+function getGeometryField(map) {
+    return $(map.getContainer()).closest('div.taggroup').find('input[name = "geometry"]');
+}
+
+
+/**
+ * Get draw and edit functionality of draw control. Defines which options are
+ * displayed in the draw toolbar, depending on geometry_type
  *
- * @param geometry_type: 'point' or 'polygon'
- * @param editableLayers: the layers which can be edited with the edit toolbar
- * @return dictionary with draw options
+ * @param {string} geomType: Either 'point' or 'polygon'
+ * @param {L.featureGroup} drawnFeatures: The layers which can be edited with
+ *        the edit toolbar
+ * @param {string} label: The label of the map (actually the main tag of the taggroup).
+ * @returns {object} Object with draw options
  */
-function defineDrawOptions(geometry_type, editableLayers) {
-
-    var drawOptions;
-
-    if (geometry_type === 'point') {
-        var MyCustomMarker = L.Icon.extend({
+function getDrawControlOptions(geomType, drawnFeatures, label) {
+    // Shared drawing options
+    var drawOptions = {
+        position: 'topright',
+        edit: {
+            featureGroup: drawnFeatures,
+            remove: true
+        }
+    };
+    if (geomType === 'point') {
+        // Point
+        var CustomMarker = L.Icon.extend({
             options: {
                 shadowUrl: null,
                 iconSize: new L.Point(24, 40),
-                iconUrl: '/static/css/images/marker-icon-2x.png'  // todo: find a way to remove activities in url
+                iconUrl: '/static/css/images/marker-icon-2x.png'
             }
         });
 
-        drawOptions = {
-            position: 'topright',
-            // draw options
-            draw: {
-                marker: {
-                    icon: new MyCustomMarker()
-                },
-                circle: false,
-                rectangle: false,
-                polygon: false,
-                polyline: false,
-                circlemarker: false
+        drawOptions['draw'] = {
+            marker: {
+                icon: new CustomMarker()
             },
-            // edit options
-            edit: {
-                featureGroup: editableLayers,
-                remove: true
-            }
+            circle: false,
+            rectangle: false,
+            polygon: false,
+            polyline: false,
+            circlemarker: false
         };
     }
-    if (geometry_type === 'polygon') {
-        drawOptions = {
-            position: 'topright',
-            draw: {
-                polygon: {
-                    allowIntersection: false, // Restricts shapes to simple polygons
-                    drawError: {
-                        color: '#e1e100', // Color the shape will turn when intersects
-                        message: 'you can\'t draw that!' // Message that will show when intersect
-                    },
-                    shapeOptions: {
-                        color: '#bada55'
-                    }
+    if (geomType === 'polygon') {
+        // Polygon
+        drawOptions['draw'] = {
+            polygon: {
+                allowIntersection: false, // Restricts shapes to simple polygons
+                drawError: {
+                    color: '#e1e100', // Color the shape will turn when intersects
+                    message: 'you can\'t draw that!' // Message that will show when intersect
                 },
-                marker: false,
-                circle: false,
-                rectangle: false,
-                polyline: false,
-                circlemarker: false
+                shapeOptions: {
+                    color: getPolygonColorByLabel(label)
+                }
             },
-            edit: {
-                featureGroup: editableLayers,
-                remove: true
-            }
+            marker: false,
+            circle: false,
+            rectangle: false,
+            polyline: false,
+            circlemarker: false
         };
     }
-
     return drawOptions;
-}
-
-
-// removes all layers within map
-function clearDrawnElements(map, editableLayers) {
-    for (var key in editableLayers._layers) { // iterate over each layer
-        var layer = editableLayers._layers[key];
-        editableLayers.removeLayer(layer);
-    }
-};
-
-/**
- * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
- * @returns {Array} An array containing arrays with a lat/long coordinate pair
- */
-function changeToLatLon(polyCoords) {
-    var polyCoordsLatLon = [];
-    for (var i = 0; i < polyCoords.length; i++) {
-        var coordLongLat = polyCoords[i];
-        var coordLatLong = coordLongLat.reverse();
-        polyCoordsLatLon.push(coordLatLong);
-    }
-    return polyCoordsLatLon;
-}
-
-
-function updateGeometryField(event, geometryField) {
-    console.log('geometryFieldE');
 }

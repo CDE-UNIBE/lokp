@@ -15,3 +15,7 @@ function getKeyNames(keys) {
     });
     return $.grep(names, function(n) { return(n) });
 }
+
+$('body').on('click', '.js-alert-hide', function() {
+    $(this).closest('.alert').hide();
+});

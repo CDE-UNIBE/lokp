@@ -13,7 +13,7 @@
  *          dbLocationGeometry: point geometry with the location of this deal (from database).
  *          dbDealAreas: list of polygons for each intended area, contract area and current area.
  */
-function createMap(mapId, options) {
+function createMap(mapId, options, geometry) {
     var baseLayers = getBaseLayers();
     var activeBaseLayer = Object.values(baseLayers)[0];
     var map = L.map(mapId, {
@@ -54,7 +54,7 @@ function createMap(mapId, options) {
     if (typeof window.lokp_maps === 'undefined') {
         window.lokp_maps = {};
     }
-    window.lokp_maps[mapId] = {
+    var mapOptions = {
         map: map,
         baseLayers: baseLayers,
         contextLayers: getContextLayers(mapId, window.mapVariables.context_layers),
@@ -67,16 +67,23 @@ function createMap(mapId, options) {
         mapVariables: window.mapVariables,
         options: options
     };
+    window.lokp_maps[mapId] = mapOptions;
 
     initBaseLayerControl();
     initMapContent(map);
     initPolygonLayers(mapId, window.mapVariables.polygon_keys);
     initContextLayerControl();
     initMapSearch(mapId);
+    
+    if (options.review === true) {
+        var pointLatLngList = initComparisonPointMarkers(map, geometry);
+        var areaLayerList = initComparisonPolygonLayers(map, geometry);
+        zoomToFeatures(map, pointLatLngList, areaLayerList);
+        return;
+    }
 
     if (options.readonly !== true) {
-        var geometry_type = options.geometry_type['geometry_type'];
-        initDrawPolygonControl(map, geometry_type, mapId);
+        initDrawControl(mapOptions);
     }
     else {
         initDetailsMap(map, options);
@@ -88,16 +95,34 @@ function createMap(mapId, options) {
  * Helper Methods
  ****************************************************/
 
+
+function zoomToFeatures(map, pointLatLngList, areaLayerList) {
+    var bbox = L.latLngBounds();
+    pointLatLngList.forEach(function(l) {
+        bbox.extend(l);
+    });
+    areaLayerList.forEach(function(l) {
+        bbox.extend(l.getBounds());
+    });
+    map.fitBounds(bbox);
+    // If the map is zoomed in way too much (e.g. only 1 point on the map), the
+    // map is not displayed correctly (no tiles). Set the zoom manually to
+    // something more reasonable.
+    if (map.getZoom() === map.getMaxZoom()) {
+        map.setZoom(15);
+    }
+}
+
+
 /**
- *  Creates a marker with dbLocationGeometry and adds it to the map.
- *
- * @param map           leaflet map to which the marker is added
- * @param dbLocationGeometry      geometry to be added
+ * Create a marker on the map and zoom to its location.
+ * @param {L.map} map: The current map.
+ * @param {array} geojsonCoords: Point coordinates in geojson format as array.
  */
-function addDealLocationMarker(map, dbLocationGeometry) {
-    // change coordinates to lat/long
-    var coordLatLong = dbLocationGeometry.coordinates.reverse();
-    L.marker(coordLatLong).addTo(map);
+function addPointMarker(map, geojsonCoords) {
+    var latLng = L.GeoJSON.coordsToLatLng(geojsonCoords);
+    L.marker(latLng).addTo(map);
+    return latLng;
 }
 
 /**
@@ -109,23 +134,31 @@ function addDealLocationMarker(map, dbLocationGeometry) {
  */
 function addDealAreasToLayerControl(map, dbDealAreas) {
     // iterate over dictionary
-
     var layerDictionary = [];
+    var areaLayers = [];
     $.each(dbDealAreas, function (key, polygon) {  // method doku: http://api.jquery.com/jquery.each/
-        // convert to leaflet polygon
-        var polyCoords = polygon.coordinates;
-        polyCoords = polyCoords[0]; // remove unnecessary array depth
+        var coords = polygon.coordinates;
+        var coordsTransformed;
+        if (polygon.type === 'Polygon') {
+            coordsTransformed = coords.map(function(c) {
+                return L.GeoJSON.coordsToLatLngs(c);
+            });
+        } else if (polygon.type === 'MultiPolygon') {
+            coordsTransformed = coords.map(function(c2) {
+                return c2.map(function(c1) {
+                    return L.GeoJSON.coordsToLatLngs(c1);
+                })
+            });
+        }
+        var polygonL = L.polygon(
+            coordsTransformed,
+            {
+                color: getPolygonColorByLabel(key)
+            });
+        areaLayers.push(polygonL);
 
-        // change each long lat coordinate within polyCoords to lat long
-        var polyCoordsLatLon = changeToLatLon(polyCoords);
-
-        var layerColor = getLayerColor(key);
-
-        var polygonL = L.polygon(polyCoordsLatLon, {color: layerColor});
         map.addLayer(polygonL); // polygons are initially added to the map
         layerDictionary[key] = polygonL;
-
-        // TODO: add checkbox (html code can be passed with key) http://leafletjs.com/reference-1.3.0.html#control-layers
     });
 
     // add Layers to layer control
@@ -134,195 +167,136 @@ function addDealAreasToLayerControl(map, dbDealAreas) {
     if (!jQuery.isEmptyObject(layerDictionary)) {  // only add layer control if layers aren't empty
         L.control.layers([], layerDictionary).addTo(map);
     }
+    return areaLayers;
 }
 
-/**
- *
- * @param polyCoords An array containing arrays with a long/lat coordinate pair (for each vertex of the polygon)
- * @returns {Array} An array containing arrays with a lat/long coordinate pair
- */
-function changeToLatLon(polyCoords) {
-    var polyCoordsLatLon = [];
-    for (var i = 0; i < polyCoords.length; i++) {
-        var coordLongLat = polyCoords[i];
-        var coordLatLong = coordLongLat.reverse();
-        polyCoordsLatLon.push(coordLatLong);
-    }
-    return polyCoordsLatLon;
-}
-
-
-/**
- *
- * @param layerLabel label of the layer for which a color is defined based on it name
- * @return string specifying a color
- */
-function getLayerColor(layerLabel) {
-    var layerColor;
-    if (layerLabel === 'Intended area (ha)') {  // TODO: get string from config
-        layerColor = 'lightgreen';
-    }
-    if (layerLabel === 'Contract area (ha)') {
-        layerColor = 'green';
-    }
-    if (layerLabel === 'Current area in operation (ha)') {
-        layerColor = 'blue';
-    }
-    return layerColor
-}
 
 function initDetailsMap(map, options) {
-    var dbLocationGeometry = options.dbLocationGeometry;
     var dbDealAreas = options.dbDealAreas;
-    var coordinatesLatLong = dbLocationGeometry.coordinates;
-
-    addDealLocationMarker(map, dbLocationGeometry); // geometry and dealAreas are defined in mapform.mak!!
-    zoomToDealLocation(map, coordinatesLatLong);
-    addDealAreasToLayerControl(map, dbDealAreas);
+    var pointLatLng = addPointMarker(map, options.dbLocationGeometry.coordinates);
+    var areaLayerList = addDealAreasToLayerControl(map, dbDealAreas);
+    zoomToFeatures(map, [pointLatLng], areaLayerList);
 }
 
 /**
  * Function is called when the 'parse' button is clicked. The entered coordinates are converted to a list of lat/long
  * coordinates. An event is dispatched containing the coordinates, which is then handled in drawPolygonFeature.js
  *
- * @param mapTitle: the id of the map container for which the function is called.
+ * @param mapId: the id of the map container for which the function is called.
  */
-function parseCoordinates(mapTitle) {
-    if (mapTitle === 'map11') {
+function parseCoordinates(mapId) {
+    var coordsField = $('#map-coords-field-' + mapId).val(); // read values from mak
+    var coordsFormat = $('#map-coords-format-' + mapId).val();
 
+    // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
 
-        var coordsField = $('#map-coords-field').val(); // read values from mak
-        var coordsFormat = $('#map-coords-format').val();
+    // It seems to be necessary to escape the values. Otherwise, the degree
+    // symbol (°) is not recognized.
+    var str = escape(coordsField);
+    // However, we do need to replace the spaces again do prevent regex error.
+    str = str.replace(/%20/g, ' ');
 
-        // Regex inspiration by: http://www.nearby.org.uk/tests/geotools2.js
+    var pattern, matches;
+    var latsign, longsign, d1, m1, s1, d2, m2, s2;
+    var latitude, longitude, latlong;
 
-        // It seems to be necessary to escape the values. Otherwise, the degree
-        // symbol (°) is not recognized.
-        var str = escape(coordsField);
-        // However, we do need to replace the spaces again do prevent regex error.
-        str = str.replace(/%20/g, ' ');
-
-        var pattern, matches;
-        var latsign, longsign, d1, m1, s1, d2, m2, s2;
-        var latitude, longitude, latlong;
-
-        if (coordsFormat == 1) {
-            // 46° 57.1578 N 7° 26.1102 E
-            pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[3] === 'S') ? -1 : 1;
-                longsign = (matches[6] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[1]);
-                m1 = parseFloat(matches[2]);
-                d2 = parseFloat(matches[4]);
-                m2 = parseFloat(matches[5]);
-                latitude = latsign * (d1 + (m1 / 60.0));
-                longitude = longsign * (d2 + (m2 / 60.0));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 2) {
-            // 46° 57' 9.468" N 7° 26' 6.612" E
-            pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[4] === 'S') ? -1 : 1;
-                longsign = (matches[8] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[1]);
-                m1 = parseFloat(matches[2]);
-                s1 = parseFloat(matches[3]);
-                d2 = parseFloat(matches[5]);
-                m2 = parseFloat(matches[6]);
-                s2 = parseFloat(matches[7]);
-                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
-                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 3) {
-            // N 46° 57.1578 E 7° 26.1102
-            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[1] === 'S') ? -1 : 1;
-                longsign = (matches[4] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[2]);
-                m1 = parseFloat(matches[3]);
-                d2 = parseFloat(matches[5]);
-                m2 = parseFloat(matches[6]);
-                latitude = latsign * (d1 + (m1 / 60.0));
-                longitude = longsign * (d2 + (m2 / 60.0));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 4) {
-            // N 46° 57' 9.468" E 7° 26' 6.612"
-            pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latsign = (matches[1] === 'S') ? -1 : 1;
-                longsign = (matches[5] === 'W') ? -1 : 1;
-                d1 = parseFloat(matches[2]);
-                m1 = parseFloat(matches[3]);
-                s1 = parseFloat(matches[4]);
-                d2 = parseFloat(matches[6]);
-                m2 = parseFloat(matches[7]);
-                s2 = parseFloat(matches[8]);
-                latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
-                longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
-                latlong = [latitude, longitude];
-            }
-        } else if (coordsFormat == 5) {
-            // 46.95263, 7.43517
-            pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
-            matches = str.match(pattern);
-            if (matches) {
-                latlong = [matches[1], matches[2]];
-            }
+    if (coordsFormat === '1') {
+        // 46° 57.1578 N 7° 26.1102 E
+        pattern = /(\d+)[%B0\s]+(\d+\.\d+)\s*([NS])[%2C\s]+(\d+)[%B0\s]+(\d+\.\d+)\s*([WE])/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[3] === 'S') ? -1 : 1;
+            longsign = (matches[6] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[1]);
+            m1 = parseFloat(matches[2]);
+            d2 = parseFloat(matches[4]);
+            m2 = parseFloat(matches[5]);
+            latitude = latsign * (d1 + (m1 / 60.0));
+            longitude = longsign * (d2 + (m2 / 60.0));
+            latlong = [latitude, longitude];
         }
-
-        if (latlong != null) {
-            // Create the event. This way of event handling should be compatible with IE
-            var event = new CustomEvent('sendCoordinates', {detail: latlong}); // create event and add coordinates
-
-            // Define that the event name is 'sendCoordinates'.
-            event.initEvent('sendCoordinates', true, true);
-
-            window.dispatchEvent(event);
-
-        } else {
-            showParseFeedback(tForInvalidFormat, 'error');
+    } else if (coordsFormat === '2') {
+        // 46° 57' 9.468" N 7° 26' 6.612" E
+        pattern = /(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([NS])[%2C\s]+(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22\s]+([WE])/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[4] === 'S') ? -1 : 1;
+            longsign = (matches[8] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[1]);
+            m1 = parseFloat(matches[2]);
+            s1 = parseFloat(matches[3]);
+            d2 = parseFloat(matches[5]);
+            m2 = parseFloat(matches[6]);
+            s2 = parseFloat(matches[7]);
+            latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+            longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+            latlong = [latitude, longitude];
         }
+    } else if (coordsFormat === '3') {
+        // N 46° 57.1578 E 7° 26.1102
+        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+\.\d+)[%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+\.\d+)/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[1] === 'S') ? -1 : 1;
+            longsign = (matches[4] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[2]);
+            m1 = parseFloat(matches[3]);
+            d2 = parseFloat(matches[5]);
+            m2 = parseFloat(matches[6]);
+            latitude = latsign * (d1 + (m1 / 60.0));
+            longitude = longsign * (d2 + (m2 / 60.0));
+            latlong = [latitude, longitude];
+        }
+    } else if (coordsFormat === '4') {
+        // N 46° 57' 9.468" E 7° 26' 6.612"
+        pattern = /([NS])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)[%22%2C\s]+([WE])\s*(\d+)[%B0\s]+(\d+)[%27\s]+(\d+\.\d+)/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latsign = (matches[1] === 'S') ? -1 : 1;
+            longsign = (matches[5] === 'W') ? -1 : 1;
+            d1 = parseFloat(matches[2]);
+            m1 = parseFloat(matches[3]);
+            s1 = parseFloat(matches[4]);
+            d2 = parseFloat(matches[6]);
+            m2 = parseFloat(matches[7]);
+            s2 = parseFloat(matches[8]);
+            latitude = latsign * (d1 + (m1 / 60.0) + (s1 / (60.0 * 60.0)));
+            longitude = longsign * (d2 + (m2 / 60.0) + (s2 / (60.0 * 60.0)));
+            latlong = [latitude, longitude];
+        }
+    } else if (coordsFormat === '5') {
+        // 46.95263, 7.43517
+        pattern = /(\d+\.\d+)[%2C\s]+(\d+\.\d+)/i;
+        matches = str.match(pattern);
+        if (matches) {
+            latlong = [matches[1], matches[2]];
+        }
+    }
+
+    if (latlong != null) {
+        var mapOptions = getMapOptionsById(mapId);
+        zoomAddSearchMarker(mapOptions, L.latLng(latlong), true);
+        showParseFeedback(mapId, 'Coordinates successfully parsed.', 'success');
+    } else {
+        showParseFeedback(mapId, tForInvalidFormat, 'error');
     }
     return false;
 }
 
 
-
-/**
- * Function to show or hide the div to parse coordinates.
- */
-function triggerCoordinatesDiv() {
-    var coordinatesDiv = $('#coordinates-div');
-    if (coordinatesDiv.is(':hidden')) {
-        coordinatesDiv.show();
-    } else {
-        coordinatesDiv.hide();
-    }
-}
-
 /**
  * Show a feedback after parsing the entered coordinates.
+ * @param {string} mapId
  * @param {String} msg
  * @param {String} textStyle
  */
-function showParseFeedback(msg, textStyle) {
-    var msgField = $('#map-coords-message');
-
-    msgField.html([
-        '<span class="text-',
-        textStyle,
-        '"></br>',
-        msg,
-        '</span>'
-    ].join(''));
+function showParseFeedback(mapId, msg, textStyle) {
+    var messageContainer = $('#map-actions-feedback-' + mapId);
+    messageContainer.removeClass(function(index, className) {
+        return (className.match (/(^|\s)alert-\S+/g) || []).join(' ');
+    });
+    messageContainer.addClass('alert-' + textStyle);
+    messageContainer.find('.js-error-message').html(msg);
+    messageContainer.show();
 }
 

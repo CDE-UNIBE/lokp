@@ -1419,6 +1419,12 @@ class Protocol(object):
                                             geometry = tag_dict['value'].get('geometry')
                                             ## TODO: refactor this
 
+                                            # If the geometry is None, save it
+                                            # as such in the db.
+                                            if geometry is None:
+                                                new_taggroup.geometry = None
+                                                continue
+
                                             try:
                                                 tg_geom = geojson.loads(geometry)
                                                 # The geometry
