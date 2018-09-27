@@ -7,10 +7,23 @@ This section covers the steps necessary to get the LOKP up and running.
 Prerequisites
 -------------
 
+Overview
+^^^^^^^^
+
++------------+---------+
+|            | version |
++============+=========+
+| Python     |     3.6 |
++------------+---------+
+| PostgreSQL |    >9.4 |
++------------+---------+
+| PostGIS    |    >9.4 |
++------------+---------+
+
 Python
 ^^^^^^
 
-`Python`_ needs to be installed. LOKP is currently running under Python 2.7.x. 
+`Python`_ needs to be installed. LOKP is currently running under Python 3.6.
 You can `download Python`_ here if it is not yet installed.
 
 .. _download Python: http://python.org/download/
@@ -32,8 +45,9 @@ encourage you to install and use `Git Flow`_ as well.
 PostgreSQL
 ^^^^^^^^^^
 
-The data entered in the LOKP is stored in a `PostgreSQL`_ database (version 9.1),
-which needs to be installed along with its spatial extension `PostGIS`_.
+The data entered in the LOKP is stored in a `PostgreSQL`_ database (> version
+9.4), which needs to be installed along with its spatial extension `PostGIS`_
+(> version 2.1).
 
 .. _PostgreSQL: http://www.postgresql.org/
 .. _PostGIS: http://postgis.net/
@@ -88,7 +102,7 @@ virtualenv with administrative privileges::
 
 You can then create a new virtual environment::
 
-    $ virtualenv env
+    $ virtualenv --python=/usr/bin/python3.6 env
     
 This will create a new folder named ``env`` which contains the virtual 
 environment.
@@ -122,14 +136,23 @@ your command line.
 
 You can now install the dependencies of the project::
 
-    (env) $ python setup.py develop
+    (env) $ pip install -e .
+
+.. NOTE::
+    If you are deploying the application, use `(env) $ pip install -e .[deploy]`
     
 This may take a while as all of the libraries on which LOKP depends are being 
 installed. If all went well, you should see a message similar to:
 
-``Finished processing dependencies for LMKP==X.X``
+``Successfully installed lokp``
 
 .. _LOKP Github repository: https://github.com/CDE-UNIBE/lokp
+
+.. NOTE::
+    Some dependencies might require additional packages to be installed. In case
+    you getting errors, try installing the dev-packages of Python 3.6::
+
+        sudo apt-get install python3.6-dev
 
 
 Configuration
@@ -157,19 +180,19 @@ Database
 ^^^^^^^^
 
 Please make sure that you have PostgreSQL and PostGIS installed. Create a new
-database user and a new database, with the newly created user as owner and based
-on the postgis_template. In the new database, create the schemas "data" and 
+database user and a new database, with the newly created user as owner. Create a
+new extension "postgis". In the new database, create the schemas "data" and
 "context", both owned by the previously created user.
 
 Adapt the database settings in the configuration file ``development.ini`` by
 replacing ``username``, ``password`` and ``database``:
 
-``sqlalchemy.url = postgresql://username:password@localhost:5432/database``
+``sqlalchemy.url = postgresql://user:password@localhost:5432/database``
 
 You can then use the following command to create the tables in your database
 automatically::
 
-    (env) $ populate_lmkp development.ini
+    (env) $ initialize_lokp_db development.ini
 
 
 Customization
@@ -177,20 +200,20 @@ Customization
 
 Every instance of LOKP needs to run with a specific customization. The 
 customization is indicated in the configuration file with the settings 
-``lmkp.customization`` and ``lmkp.profiles_dir``.
+``lokp.customization`` and ``lokp.profiles_dir``.
 
 
 .. rubric:: Customization
 
 The customization files need to be situated in a directory under 
-``lmkp/customization``. You can create your own customization, but it is much 
+``lokp/customization``. You can create your own customization, but it is much
 easier to start off with a preexisting customization of LOKP. 
 
 For example, you can use the `Land Observatory`_ (LO) customization. To do this,
 you need to clone the code of the LO customization (the code of which can be 
-found on `Github`_) into the folder ``lmkp/customization/lo``::
+found on `Github`_) into the folder ``lokp/customization/lo``::
 
-    (env) $ cd lmkp/customization
+    (env) $ cd lokp/customization
     (env) $ git clone https://github.com/CDE-UNIBE/lokp_custom_lo.git lo
 
 It does not matter if you perform these commands with an activated virtual 
@@ -204,7 +227,7 @@ of the repository::
 
 Make sure the customization is correctly defined in the configuration file:
 
-``lmkp.customization = lo``
+``lokp.customization = lo``
 
 See the section on the `Configuration`_ for more information.
 
@@ -216,7 +239,7 @@ which make up Activities and Stakeholders.
 
 In the configuration file, you can specify which profile is to be used:
 
-``lmkp.profiles_dir = devel``
+``lokp.profiles_dir = devel``
 
 See the section on the `Configuration`_ for more information.
 
@@ -226,7 +249,7 @@ A customization defines the attributes of an Activity and a Stakeholder and it
 should also contain a script to insert these initial values into the database.
 
 For the LO customization, there is a SQL script name which can be found at 
-``lmkp/customization/lo/scripts/populate_keyvalues.sql``. Run this script as an
+``lokp/customization/lo/scripts/populate_keyvalues.sql``. Run this script as an
 SQL query in your database to enter the data.
 
 
@@ -234,24 +257,28 @@ SQL query in your database to enter the data.
 .. _Github: https://github.com/CDE-UNIBE/lokp_custom_lo
 
 
-JavaScript libraries
-^^^^^^^^^^^^^^^^^^^^
+..
+    [Commenting this as JS libraries are in Git. This only because NPM does not
+    work properly ...]
 
-There are some additional JavaScript libraries necessary for the LOKP to work
-properly. They need to be downloaded, extracted if necessary and copied to 
-``lmkp/static/lib/`` (you will have to create this folder).
+    JavaScript libraries
+    ^^^^^^^^^^^^^^^^^^^^
 
-For the time being, these are the following:
+    There are some additional JavaScript libraries necessary for the LOKP to work
+    properly. They need to be downloaded, extracted if necessary and copied to
+    ``lokp/static/lib/`` (you will have to create this folder).
 
-.. rubric:: OpenLayers
+    For the time being, these are the following:
 
-The `OpenLayers`_ library is used for the maps of the LOKP. Currently, we are
-using OpenLayers 2.12, which can be downloaded `here`_.
+    .. rubric:: OpenLayers
 
-Copy the extracted folder to: ``lmkp/static/lib/OpenLayers-2.12``.
+    The `OpenLayers`_ library is used for the maps of the LOKP. Currently, we are
+    using OpenLayers 2.12, which can be downloaded `here`_.
 
-.. _OpenLayers: http://openlayers.org/
-.. _here: http://openlayers.org/download/
+    Copy the extracted folder to: ``lokp/static/lib/OpenLayers-2.12``.
+
+    .. _OpenLayers: http://openlayers.org/
+    .. _here: http://openlayers.org/download/
 
 
 See it in action

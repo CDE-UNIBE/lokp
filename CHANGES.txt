@@ -1,21 +1,9 @@
-Next release
-============
+1.0
+---
 
-Features
---------
+25.01.2018
 
-- ...
-
-Bug Fixes
----------
-
-- ...
-
-Docs
-----
-
-- ...
-
-
-1.0 (2014-11-03)
-================
+- Move to Python 3
+- Upgrade all requirements
+- Moving stuff around, not much refactoring yet
+- First tests

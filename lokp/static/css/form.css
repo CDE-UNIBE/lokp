@@ -1,0 +1,168 @@
+/*li>label.desc {
+    color: red;
+}*/
+
+.form-add-more-icon {
+    margin-bottom: 15px;
+}
+
+.form-remove-more-icon {
+    margin-bottom: 15px;
+}
+
+.btnText {
+    background: none!important;
+    color: white !important;
+    border: none;
+    text-align: left;
+    padding: 0!important;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+div#create-new-stakeholder {
+    display: none;
+}
+
+.grid-area > .taggroup {
+    padding-top: 0;
+    margin-top: 0;
+    border-top: 0;
+}
+
+.taggroup {
+    padding-top: 20px;
+    margin-top: 10px;
+}
+
+div#new-stakeholder-buttons {
+    padding: 10px;
+}
+
+div#select-existing-stakeholder {
+    display: none;
+}
+
+div#stakeholderformcontainer {
+    background-color: lightgoldenrodyellow;
+}
+
+input.readonly {
+    /* This class is used as a selector in new_stakeohlder.mak, edit with care! */
+    background-color: #E8E8E8 !important;
+    border: 1px solid #B5BCC7 !important;
+}
+
+li.shtoomanyresults {
+    color: orange;
+}
+
+li.shnothingfound {
+    color: darkred;
+}
+
+div#stakeholderformcontainer {
+    padding: 10px;
+    display: none;
+}
+
+span.shautocompletedescription {
+    font-size: 0.8em;
+}
+
+input#shselectinput {
+    width: 300px;
+}
+
+.ui-autocomplete {
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+  }
+/* IE 6 doesn't support max-height
+* we use height instead, but this forces the menu to always be this tall
+*/
+* html .ui-autocomplete {
+    height: 300px;
+}
+
+/* NUMBER SPINNER */
+.ui-spinner {
+	position:relative;
+	display: inline-block;
+	overflow: hidden;
+	padding: 0;
+	vertical-align: middle;
+}
+
+span.ui-spinner {
+	border-radius: 0;
+}
+
+span.ui-spinner input {
+	font-size: 0.8em;
+}
+
+.ui-spinner-input {
+	border: none;
+	background: none;
+	padding: 0;
+	margin: .2em 0;
+	vertical-align: middle;
+	margin-left: .4em;
+	margin-right: 22px;
+}
+
+.ui-spinner-button {
+	width: 16px;
+	height: 50%;
+	font-size: .5em;
+	padding: 0;
+	margin: 0;
+	text-align: center;
+	position: absolute;
+	cursor: default;
+	display: block;
+	overflow: hidden;
+	right: 0;
+}
+
+.ui-spinner a.ui-spinner-button {
+	border-top: none;
+	border-bottom: none;
+	border-right: none;
+}
+
+.ui-spinner .ui-icon {
+	position: absolute;
+	margin-top: -8px;
+	top: 50%;
+	left: 0;
+}
+
+.ui-spinner-up {
+	top: 0;
+}
+
+.ui-spinner-down {
+	bottom: 0;
+}
+
+/* TR overrides */
+.ui-spinner .ui-icon-triangle-1-s {
+	/* need to fix icons sprite */
+	background-position:-65px -16px;
+}
+
+/* Messages in Deal Form */
+.text-success {
+	color: green;
+}
+.text-error {
+	color: red;
+}
+.text-success-large {
+	color: teal;
+}

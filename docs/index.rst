@@ -18,6 +18,7 @@ Contents:
    customization
    translation
    qgis
+   testing
 
 
 Services
@@ -57,19 +58,6 @@ Latest changes
    :maxdepth: 1
 
    changes
-
-
-API Documentation
-~~~~~~~~~~~~~~~~~
-
-Please note that the API Documentation is still under heavy construction.
-
-.. toctree::
-   :maxdepth: 1
-   :glob:
-
-   api/*
-   api/views/*
 
 
 Index and glossary
