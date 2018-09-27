@@ -139,7 +139,9 @@ You can now install the dependencies of the project::
     (env) $ pip install -e .
 
 .. NOTE::
-    If you are deploying the application, use `(env) $ pip install -e .[deploy]`
+    If you are deploying the application, use::
+
+        (env) $ pip install -e .[deploy]
     
 This may take a while as all of the libraries on which LOKP depends are being 
 installed. If all went well, you should see a message similar to:
@@ -150,9 +152,19 @@ installed. If all went well, you should see a message similar to:
 
 .. NOTE::
     Some dependencies might require additional packages to be installed. In case
-    you getting errors, try installing the dev-packages of Python 3.6::
+    you are getting errors, try installing the dev-packages of Python 3.6::
 
         sudo apt-get install python3.6-dev
+
+.. NOTE::
+    The dependency ``cryptacular==1.4.1`` seems to be broken for Python 3.6.5 (see
+    https://bitbucket.org/dholth/cryptacular/issues/11/not-installing-on-ubuntu-1804).
+    If the installation fails because of this dependency, try to install it manually
+    using::
+
+        pip install -e hg+https://bitbucket.org/dholth/cryptacular@cb96fb3#egg=cryptacular-1.4.1
+
+    (you may have to install Mercurial first: ``sudo apt-get install mercurial``).
 
 
 Configuration

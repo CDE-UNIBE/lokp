@@ -10,7 +10,7 @@ with open(os.path.join(here, 'CHANGES.txt')) as f:
 
 requires = [
     'babel==2.5.3',
-    'cryptacular==1.4.1',
+    'cryptacular==1.4.1',  # If error here, see installation section in documentation.
     'deform==2.0.4',
     'geoalchemy2==0.4.2',
     'geojson==2.3.0',
