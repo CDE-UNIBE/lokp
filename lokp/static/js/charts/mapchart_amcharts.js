@@ -204,8 +204,10 @@ function createChartMap(areas) {
 }
 
 function initContent(areas, attribute) {
+    var countryList = $('#countries-list');
+    countryList.html('');
     for (var i=0; i<areas.length; i++) {
         var country = '<li class="countries-list-entry">' + areas[i].name + '<span class="right">' + areas[i].value + ' ' + attribute + '</span></li>';
-        $('#countries-list').append(country);
+        countryList.append(country);
     }
 }

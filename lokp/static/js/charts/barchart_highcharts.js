@@ -45,6 +45,14 @@ function prepareChartData(curr_key) {
             "name": d.group.value.default,
             "y": d.values[curr_key].value
         };
+    }).filter(function(d) {
+        if (excludeMyanmarData) {
+            return d.name !== 'Myanmar';
+        } else {
+            return true;
+        }
+    }).sort(function(a, b) {
+        return (a.y > b.y) ? -1 : ((b.y > a.y) ? 1 : 0);
     });
 
     var title = responseData.data[0]['group']['key']['default'];
