@@ -58,7 +58,7 @@ function initComparisonPolygonLayers(map, geometry) {
     var layerList = [];
     [refAreas, newAreas].forEach(function(areas) {
         for (var a in areas) {
-            if (areas.hasOwnProperty(a)) {
+            if (areas.hasOwnProperty(a) && areas[a] !== null) {
                 var layer = getFeatureGroupFromGeometry(areas[a].geometry, a);
                 layer.setStyle({
                     fillColor: refOrNewOptions[refOrNewKey].color,

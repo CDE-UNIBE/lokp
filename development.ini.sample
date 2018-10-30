@@ -36,6 +36,14 @@ lokp.file_mime_extensions = image/jpeg .jpg
                             application/pdf .pdf
 lokp.base_wps = CHANGEME
 
+# Session settings
+session.type = file
+session.data_dir = %(here)s/data/sessions/data
+session.lock_dir = %(here)s/data/sessions/lock
+session.key = mykey
+session.secret = mysecret
+session.cookie_on_exception = true
+
 ###
 # wsgi server configuration
 ###
